@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { isRedirectError } from "next/dist/client/components/redirect-error"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function signInWithGoogle() {
@@ -22,7 +23,8 @@ export async function signInWithGoogle() {
     }
 
     redirect(data.url)
-  } catch {
+  } catch (e) {
+    if (isRedirectError(e)) throw e
     redirect("/login?error=config")
   }
 }
