@@ -733,8 +733,8 @@ export function TicketWorkspace({
         onExpandedChange={setSidebarExpanded}
       />
       <div className="min-h-screen">
-        <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] px-3 backdrop-blur sm:px-6 lg:px-8">
-          <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3">
+        <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
+          <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
             <div className="min-w-0">
               <div className="truncate text-[18px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
                 {view === "my" ? "My tickets" : "All tickets"}
@@ -746,8 +746,7 @@ export function TicketWorkspace({
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
-              <div className="relative hidden items-center sm:flex">
+              <div className="relative hidden sm:flex items-center">
                 <Search
                   size={13}
                   className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
@@ -785,6 +784,10 @@ export function TicketWorkspace({
           </div>
         </header>
 
+        <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)]">
+          <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
+        </div>
+
         <main className="flex flex-col pt-5">
           {viewMode === "table" ? (
             <TicketTable
@@ -796,7 +799,7 @@ export function TicketWorkspace({
               onGlobalFilterChange={setGlobalFilter}
               onOpen={openTicket}
             />
-          ) : (
+          ) : viewMode === "kanban" ? (
             <TicketKanban
               tickets={tickets}
               selectedId={selectedId}
@@ -805,6 +808,16 @@ export function TicketWorkspace({
               onOpen={openTicket}
               onQuickCreate={quickCreateTicket}
               onStatusChange={requestKanbanStatusChange}
+            />
+          ) : (
+            <TicketTable
+              tickets={tickets}
+              selectedId={selectedId}
+              users={users}
+              attachmentCounts={attachmentCounts}
+              globalFilter={globalFilter}
+              onGlobalFilterChange={setGlobalFilter}
+              onOpen={openTicket}
             />
           )}
         </main>

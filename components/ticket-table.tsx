@@ -217,7 +217,26 @@ export function TicketTable({
     <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
       {/* Toolbar */}
       <div className="mb-3 flex items-center gap-2">
-        {/* Filters */}
+        {/* Active filter chips */}
+        {activeFilters.map((filter) => (
+          <span
+            key={filter.key}
+            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
+          >
+            {filter.label}
+            <button
+              type="button"
+              onClick={filter.onClear}
+              aria-label={`Remove ${filter.label} filter`}
+              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+            >
+              <X size={11} />
+            </button>
+          </span>
+        ))}
+
+        <div className="ml-auto flex items-center gap-2">
+          {/* Filters */}
         <Popover
           panelClassName="w-[280px] p-3"
           trigger={
@@ -392,24 +411,7 @@ export function TicketTable({
           <GitBranch size={13} />
           Subtasks
         </button>
-
-        {/* Active filter chips */}
-        {activeFilters.map((filter) => (
-          <span
-            key={filter.key}
-            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
-          >
-            {filter.label}
-            <button
-              type="button"
-              onClick={filter.onClear}
-              aria-label={`Remove ${filter.label} filter`}
-              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
-            >
-              <X size={11} />
-            </button>
-          </span>
-        ))}
+        </div>
       </div>
 
       {/* Table shell */}
