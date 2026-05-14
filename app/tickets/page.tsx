@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { TicketWorkspace } from "@/components/ticket-workspace"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { dbGetTickets } from "@/lib/db/tickets"
