@@ -184,13 +184,14 @@ export function TicketTable({
   }
 
   return (
-    <div>
-      <div className="mx-auto flex max-w-[1440px] items-center gap-2 px-3 py-3 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
+      {/* Toolbar */}
+      <div className="mb-3 flex items-center gap-2">
         {/* Search */}
-        <div className="relative flex h-8 min-w-0 max-w-[280px] flex-1 items-center">
+        <div className="relative flex h-[40px] min-w-0 max-w-[280px] flex-1 items-center">
           <Search
             size={14}
-            className="pointer-events-none absolute left-2.5 text-[var(--text-faint)]"
+            className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
           />
           <input
             type="text"
@@ -198,14 +199,14 @@ export function TicketTable({
             onChange={(event) => setGlobalFilter(event.target.value)}
             placeholder="Search tickets…"
             aria-label="Search tickets"
-            className="h-8 w-full rounded-md border-[0.5px] border-[var(--border)] bg-[var(--bg)] pl-8 pr-2 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
+            className="h-[40px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
           />
           {globalFilter ? (
             <button
               type="button"
               onClick={() => setGlobalFilter("")}
               aria-label="Clear search"
-              className="absolute right-1.5 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+              className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
             >
               <X size={12} />
             </button>
@@ -219,16 +220,16 @@ export function TicketTable({
             <button
               type="button"
               className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-md border-[0.5px] px-2.5 text-[12px] font-medium transition-colors",
+                "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
                 activeFilters.length > 0
-                  ? "border-[color-mix(in_srgb,var(--accent)_36%,var(--border))] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--text)]"
-                  : "border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
               )}
             >
               <SlidersHorizontal size={13} />
               Filters
               {activeFilters.length > 0 ? (
-                <span className="flex h-4 min-w-4 items-center justify-center rounded-sm bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--bg)]">
+                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-[var(--accent)] px-1 text-[10px] font-semibold text-white">
                   {activeFilters.length}
                 </span>
               ) : null}
@@ -240,7 +241,7 @@ export function TicketTable({
               {/* Status */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Status</span>
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Status</span>
                   {statusFilter ? (
                     <button
                       type="button"
@@ -267,7 +268,7 @@ export function TicketTable({
               {/* Priority */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Priority</span>
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Priority</span>
                   {priorityFilter ? (
                     <button
                       type="button"
@@ -294,7 +295,7 @@ export function TicketTable({
               {/* Owner */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-faint)]">Owner</span>
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Owner</span>
                   {ownerFilter ? (
                     <button
                       type="button"
@@ -325,7 +326,7 @@ export function TicketTable({
                 <button
                   type="button"
                   onClick={() => { table.resetColumnFilters(); close() }}
-                  className="mt-1 w-full rounded-md border-[0.5px] border-[var(--border)] py-1.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  className="mt-1 w-full rounded-xl border border-[var(--border)] py-1.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                 >
                   Clear all filters
                 </button>
@@ -341,7 +342,7 @@ export function TicketTable({
           trigger={
             <button
               type="button"
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border-[0.5px] border-[var(--border)] bg-transparent px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+              className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text-muted)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
             >
               <SlidersHorizontal size={13} />
               Columns
@@ -359,7 +360,7 @@ export function TicketTable({
                     key={column.id}
                     type="button"
                     onClick={() => column.toggleVisibility(!checked)}
-                    className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-[12px] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                   >
                     <span>{label}</span>
                     {checked ? <Check size={13} className="text-[var(--accent)]" /> : null}
@@ -369,100 +370,128 @@ export function TicketTable({
             </div>
           )}
         </Popover>
-      </div>
 
-      <DndContext id="ticket-table-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleColumnDragEnd}>
-      <div className="relative max-h-[calc(100vh-164px)] overflow-auto px-3 sm:px-6 lg:px-8">
-        <table className="min-w-full border-separate border-spacing-0">
-          <thead className="group/thead sticky top-0 z-[1] bg-[color-mix(in_srgb,var(--surface-2)_72%,var(--bg))] backdrop-blur">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <SortableContext key={headerGroup.id} items={columnIds} strategy={horizontalListSortingStrategy}>
-                <tr>
-                  {headerGroup.headers.map((header) => (
-                    <DraggableHeader key={header.id} header={header} />
-                  ))}
-                </tr>
-              </SortableContext>
-            ))}
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={visibleColumnCount}
-                  className="px-4 py-16 text-center text-[12px] text-[var(--text-faint)]"
-                >
-                  No tickets match the current filters.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => {
-                const isSelected = row.getIsSelected()
-                const isCurrent = row.original.id === selectedId
-                return (
-                  <tr
-                    key={row.id}
-                    onClick={() => onOpen(row.original.id)}
-                    aria-current={isCurrent ? "true" : undefined}
-                    data-ticket-id={row.original.id}
-                    className={cn(
-                      "group cursor-pointer transition-colors duration-[120ms] ease-out",
-                      isCurrent
-                        ? "bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] shadow-[inset_2px_0_0_var(--accent)]"
-                        : isSelected
-                          ? "bg-[color-mix(in_srgb,var(--accent)_5%,transparent)]"
-                          : "hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,transparent)]"
-                    )}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="h-[48px] border-b-[0.5px] border-r-[0.5px] border-[var(--border)] px-3 align-middle text-[12px] text-[var(--text-muted)] last:border-r-0"
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-2 border-t-[0.5px] border-[var(--border)] px-3 py-2 text-[11px] text-[var(--text-faint)] sm:px-6 lg:px-8">
-        <span>
-          {totalFiltered === 0
-            ? "0 tickets"
-            : `${rangeStart}–${rangeEnd} of ${totalFiltered}`}
-          {selectedCount > 0 ? (
-            <span className="ml-2 text-[var(--text-muted)]">· {selectedCount} selected</span>
-          ) : null}
-        </span>
-        <span className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            aria-label="Previous page"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
+        {/* Active filter chips */}
+        {activeFilters.map((filter) => (
+          <span
+            key={filter.key}
+            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
           >
-            <ChevronLeft size={14} />
-          </button>
-          <span className="px-1 tabular-nums">
-            {table.getPageCount() === 0 ? 1 : pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
+            {filter.label}
+            <button
+              type="button"
+              onClick={filter.onClear}
+              aria-label={`Remove ${filter.label} filter`}
+              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+            >
+              <X size={11} />
+            </button>
           </span>
-          <button
-            type="button"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            aria-label="Next page"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
-          >
-            <ChevronRight size={14} />
-          </button>
-        </span>
+        ))}
       </div>
+
+      {/* Table shell */}
+      <DndContext id="ticket-table-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleColumnDragEnd}>
+        <div
+          className="overflow-hidden rounded-[18px] border border-[#E5E1DA] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.04)]"
+        >
+          <div className="max-h-[calc(100vh-220px)] overflow-auto">
+            <table className="min-w-full border-separate border-spacing-0">
+              <thead className="group/thead sticky top-0 z-[1]">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <SortableContext key={headerGroup.id} items={columnIds} strategy={horizontalListSortingStrategy}>
+                    <tr>
+                      {headerGroup.headers.map((header) => (
+                        <DraggableHeader key={header.id} header={header} />
+                      ))}
+                    </tr>
+                  </SortableContext>
+                ))}
+              </thead>
+              <tbody>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={visibleColumnCount}
+                      className="px-4 py-16 text-center text-[13px] text-[var(--text-faint)]"
+                    >
+                      No tickets match the current filters.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => {
+                    const isSelected = row.getIsSelected()
+                    const isCurrent = row.original.id === selectedId
+                    return (
+                      <tr
+                        key={row.id}
+                        onClick={() => onOpen(row.original.id)}
+                        aria-current={isCurrent ? "true" : undefined}
+                        data-ticket-id={row.original.id}
+                        className={cn(
+                          "group cursor-pointer transition-colors duration-[120ms] ease-out",
+                          isCurrent
+                            ? "bg-[var(--accent-soft)] shadow-[inset_3px_0_0_var(--accent)]"
+                            : isSelected
+                              ? "bg-[var(--accent-soft)]"
+                              : "hover:bg-[#FAF9F6]"
+                        )}
+                      >
+                        {row.getVisibleCells().map((cell, cellIndex) => (
+                          <td
+                            key={cell.id}
+                            className={cn(
+                              "h-[58px] border-b border-[#EEEAE3] px-4 align-middle text-[13px] text-[var(--text-muted)] last:border-r-0",
+                              // Vertical separator only after key group boundaries (col 0=checkbox, 1=id, 2=title)
+                              cellIndex === 2 ? "border-r border-[#EEEAE3]" : ""
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between gap-2 border-t border-[#EEEAE3] bg-[#FAFAF8] px-4 py-2.5 text-[11px] text-[var(--text-faint)]">
+            <span>
+              {totalFiltered === 0
+                ? "0 tickets"
+                : `${rangeStart}–${rangeEnd} of ${totalFiltered} tickets`}
+              {selectedCount > 0 ? (
+                <span className="ml-2 text-[var(--text-muted)]">· {selectedCount} selected</span>
+              ) : null}
+            </span>
+            <span className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                aria-label="Previous page"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="px-1 tabular-nums">
+                {table.getPageCount() === 0 ? 1 : pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
+              </span>
+              <button
+                type="button"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                aria-label="Next page"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </span>
+          </div>
+        </div>
       </DndContext>
     </div>
   )
@@ -480,7 +509,7 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
       scope="col"
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className={cn(
-        "border-b-[0.5px] border-r-[0.5px] border-[var(--border-strong)] bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)] px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--text-muted)] last:border-r-0",
+        "border-b border-[#E5E1DA] bg-[#F3F1EC] px-4 py-3 text-left text-[11px] font-[650] uppercase tracking-[0.06em] text-[#5E6470] last:border-r-0",
         meta?.width
       )}
     >
@@ -498,7 +527,7 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
           <button
             type="button"
             onClick={header.column.getToggleSortingHandler()}
-            className="inline-flex items-center gap-1 transition-colors hover:text-[var(--accent-strong)]"
+            className="inline-flex items-center gap-1 transition-colors hover:text-[var(--text)]"
           >
             {flexRender(header.column.columnDef.header, header.getContext())}
             <SortIndicator direction={sortDir} />
@@ -531,7 +560,7 @@ function FilterList({
             type="button"
             onClick={() => onSelect(item.value)}
             className={cn(
-              "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] transition-colors",
+              "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors",
               active
                 ? "bg-[var(--surface-2)] text-[var(--text)]"
                 : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
@@ -580,7 +609,7 @@ function CheckboxCell({
   return (
     <label
       className={cn(
-        "inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-[4px] border-[0.5px] transition-[opacity,background-color,border-color] duration-[120ms]",
+        "inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-[4px] border transition-[opacity,background-color,border-color] duration-[120ms]",
         checked || indeterminate
           ? "border-[var(--accent)] bg-[var(--accent)] opacity-100"
           : forceVisible
@@ -596,9 +625,9 @@ function CheckboxCell({
         aria-label={rest["aria-label"]}
       />
       {checked ? (
-        <Check size={11} strokeWidth={3} className="text-[var(--bg)]" />
+        <Check size={11} strokeWidth={3} className="text-white" />
       ) : indeterminate ? (
-        <span className="block h-[2px] w-[8px] rounded-sm bg-[var(--bg)]" />
+        <span className="block h-[2px] w-[8px] rounded-sm bg-white" />
       ) : null}
     </label>
   )

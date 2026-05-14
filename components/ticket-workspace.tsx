@@ -620,34 +620,34 @@ export function TicketWorkspace({
         onExpandedChange={setSidebarExpanded}
       />
       <div className="min-h-screen">
-        <header className="sticky top-0 z-10 border-b-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] px-3 backdrop-blur sm:px-6 lg:px-8">
-          <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-3">
+        <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] px-3 backdrop-blur sm:px-6 lg:px-8">
+          <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="truncate text-[13px] font-semibold text-[var(--text)]">
-                SIRP / All tickets
+              <div className="truncate text-[18px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
+                All tickets
               </div>
               <div className="hidden truncate text-[12px] text-[var(--text-faint)] sm:block">
-                {visibleTickets.length} visible of {tickets.length} total
+                Engineering workspace · {tickets.length} tickets
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center gap-2">
               <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
               <IconButton label="Search" onClick={() => setCommandOpen(true)}>
-                <Search size={18} />
+                <Search size={17} />
               </IconButton>
               <IconButton label="Keyboard shortcuts" onClick={() => setHelpOpen(true)}>
-                <HelpCircle size={18} />
+                <HelpCircle size={17} />
               </IconButton>
               <NotificationBell userId={currentUser.id} />
               <Button variant="primary" onClick={() => setComposerOpen(true)}>
-                <Plus size={16} />
+                <Plus size={15} />
                 <span className="hidden sm:inline">New ticket</span>
               </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex flex-col pt-6">
+        <main className="flex flex-col pt-5">
           {viewMode === "table" ? (
             <TicketTable
               tickets={tickets}

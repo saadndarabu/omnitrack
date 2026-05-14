@@ -98,7 +98,7 @@ export function Popover({
           role="dialog"
           tabIndex={-1}
           className={cn(
-            "absolute top-full z-30 mt-1.5 min-w-[208px] overflow-hidden rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface)] shadow-[0_16px_48px_-12px_rgba(0,0,0,0.5)] focus:outline-none",
+            "absolute top-full z-30 mt-1.5 min-w-[208px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_4px_6px_-2px_rgba(16,24,40,0.04),0_12px_36px_-4px_rgba(16,24,40,0.10)] focus:outline-none",
             align === "end" ? "right-0" : "left-0",
             panelClassName
           )}

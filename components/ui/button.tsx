@@ -9,9 +9,9 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-[var(--accent)] shadow-[inset_0_0_12px_color-mix(in_srgb,var(--accent)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] active:bg-[color-mix(in_srgb,var(--accent)_8%,transparent)]",
+    "bg-[#111827] text-white shadow-[0_8px_18px_rgba(17,24,39,0.12)] hover:bg-[#1f2937] active:bg-[#111827] active:shadow-none",
   quiet:
-    "bg-[var(--surface-2)] text-[var(--text)] hover:brightness-110 active:brightness-95",
+    "bg-[var(--surface-2)] text-[var(--text)] border border-[var(--border)] hover:bg-[var(--surface-3)] hover:border-[var(--border-strong)] active:bg-[var(--surface-2)]",
   ghost:
     "bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
 }
@@ -26,7 +26,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex h-8 items-center justify-center gap-2 rounded-md px-3 text-[13px] font-medium transition-[filter,background-color,color] duration-[120ms] ease-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex h-[40px] items-center justify-center gap-2 rounded-xl px-4 text-[13px] font-[650] transition-[box-shadow,background-color,color] duration-[120ms] ease-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
         variants[variant],
         className
       )}
@@ -52,7 +52,7 @@ export function IconButton({
       type={type}
       aria-label={label}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-muted)] transition-[background-color,color,filter] duration-[120ms] ease-out hover:bg-[var(--surface-2)] hover:text-[var(--text)] active:brightness-95 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-muted)] transition-[background-color,color] duration-[120ms] ease-out hover:bg-[var(--surface-2)] hover:text-[var(--text)] active:bg-[var(--surface-3)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
         className
       )}
       {...props}

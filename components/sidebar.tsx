@@ -32,34 +32,35 @@ export function Sidebar({
     <aside
       data-expanded={expanded}
       className={cn(
-        "fixed inset-y-0 left-0 z-20 hidden border-r-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_90%,var(--bg))] py-3 backdrop-blur transition-[width] duration-200 ease-out md:block",
+        "fixed inset-y-0 left-0 z-20 hidden border-r border-[var(--border)] bg-[var(--surface-2)] py-3 transition-[width] duration-200 ease-out md:block",
         expanded ? "w-[232px] px-3" : "w-[76px] px-2"
       )}
     >
       <div className="flex h-full flex-col">
+        {/* Logo */}
         <div
           className={cn(
-            "mb-4 flex h-11 items-center rounded-lg",
-            expanded ? "justify-between gap-3 px-2" : "justify-center"
+            "mb-5 flex h-11 items-center",
+            expanded ? "justify-between gap-3 px-1" : "justify-center"
           )}
         >
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-[0.5px] border-[color-mix(in_srgb,var(--accent)_34%,transparent)] bg-[color-mix(in_srgb,var(--accent)_15%,var(--surface-2))] text-[14px] font-semibold text-[var(--accent-strong)] shadow-[inset_0_1px_0_color-mix(in_srgb,var(--text)_8%,transparent)]">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#111827] text-[14px] font-bold text-white shadow-[0_4px_12px_rgba(17,24,39,0.18)]">
             S
           </span>
 
           {expanded ? (
             <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-semibold leading-4 text-[var(--text)]">
+              <span className="block text-[14px] font-semibold leading-4 tracking-[-0.02em] text-[var(--text)]">
                 SECC
               </span>
-              <span className="block truncate text-[11px] font-medium leading-4 text-[var(--text-faint)]">
+              <span className="block truncate text-[11px] leading-4 text-[var(--text-faint)]">
                 Engineering command
               </span>
             </span>
           ) : null}
         </div>
 
-        <nav aria-label="Workspace navigation" className="space-y-1.5">
+        <nav aria-label="Workspace navigation" className="space-y-1">
           {primaryItems.map(({ label, Icon, href }) => {
             const active = label === current
             return (
@@ -69,27 +70,22 @@ export function Sidebar({
                 title={expanded ? undefined : label}
                 aria-label={label}
                 className={cn(
-                  "group flex h-11 items-center rounded-lg text-[13px] font-medium text-[var(--text-muted)] transition-colors duration-[120ms] ease-out hover:bg-[color-mix(in_srgb,var(--surface-2)_72%,transparent)] hover:text-[var(--text)]",
+                  "group flex h-[42px] items-center rounded-[14px] text-[13px] font-medium transition-colors duration-[120ms] ease-out",
                   expanded ? "gap-3 px-2.5" : "justify-center px-0",
-                  active &&
-                    "bg-[color-mix(in_srgb,var(--surface-2)_84%,var(--bg))] text-[var(--text)] shadow-[inset_0_0_0_0.5px_var(--border)]"
+                  active
+                    ? "bg-[#111827] text-white shadow-[0_8px_20px_rgba(17,24,39,0.12)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--surface-3)] hover:text-[var(--text)]"
                 )}
               >
                 <span
                   className={cn(
-                    "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-[0.5px] border-transparent transition-colors",
-                    active
-                      ? "border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]"
-                      : "bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)] group-hover:border-[var(--border)]"
+                    "inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg transition-colors",
+                    active ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text)]"
                   )}
                 >
                   <Icon
-                    size={19}
-                    strokeWidth={2.1}
-                    className={cn(
-                      "text-[var(--text-muted)] transition-colors",
-                      active && "text-[var(--accent)]"
-                    )}
+                    size={17}
+                    strokeWidth={active ? 2.4 : 2}
                   />
                 </span>
                 {expanded ? <span className="truncate">{label}</span> : null}
@@ -106,12 +102,12 @@ export function Sidebar({
           aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           title={theme === "dark" ? "Light mode" : "Dark mode"}
           className={cn(
-            "mb-2 flex h-10 items-center rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_72%,transparent)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]",
+            "mb-2 flex h-9 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]",
             expanded ? "justify-between px-2.5" : "justify-center px-0"
           )}
         >
           {expanded ? <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span> : null}
-          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
         </button>
 
         <button
@@ -120,12 +116,12 @@ export function Sidebar({
           aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
           aria-expanded={expanded}
           className={cn(
-            "mt-4 flex h-10 items-center rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_72%,transparent)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]",
+            "flex h-9 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]",
             expanded ? "justify-between px-2.5" : "justify-center px-0"
           )}
         >
           {expanded ? <span>Collapse</span> : null}
-          {expanded ? <ChevronLeft size={16} /> : <ChevronRight size={18} />}
+          {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={16} />}
         </button>
       </div>
     </aside>

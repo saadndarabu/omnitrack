@@ -3,6 +3,27 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
+  --bg: #F7F6F3;
+  --surface: #FFFFFF;
+  --surface-2: #F1F0EC;
+  --surface-3: #E8E6E0;
+  --border: #E3E0D8;
+  --border-strong: #C8C4BA;
+  --text: #1F2328;
+  --text-muted: #6B7280;
+  --text-faint: #9CA3AF;
+  --accent: #6D4AFF;
+  --accent-soft: #EEE9FF;
+  --accent-strong: #5538E0;
+  --status-todo: #9CA3AF;
+  --status-progress: #B45309;
+  --status-review: #6D28D9;
+  --status-done: #16803C;
+  --status-blocked: #BE123C;
+}
+
+html.dark {
   color-scheme: dark;
   --bg: #0d1515;
   --surface: #151d1e;
@@ -13,33 +34,14 @@
   --text: #dce4e4;
   --text-muted: #b9cacb;
   --text-faint: #849495;
-  --accent: #00dbe7;
-  --accent-strong: #00f2ff;
+  --accent: #8b5cf6;
+  --accent-soft: rgba(139, 92, 246, 0.12);
+  --accent-strong: #7c3aed;
   --status-todo: #849495;
   --status-progress: #e8c423;
   --status-review: #d3bbff;
   --status-done: #63D68A;
   --status-blocked: #F06F82;
-}
-
-html.light {
-  color-scheme: light;
-  --bg: #f0f4f4;
-  --surface: #ffffff;
-  --surface-2: #e4eced;
-  --surface-3: #d6e1e2;
-  --border: rgba(0, 90, 95, 0.12);
-  --border-strong: rgba(0, 105, 111, 0.35);
-  --text: #192122;
-  --text-muted: #3a494b;
-  --text-faint: #849495;
-  --accent: #00696f;
-  --accent-strong: #004f54;
-  --status-todo: #849495;
-  --status-progress: #725e00;
-  --status-review: #5b00c5;
-  --status-done: #128A48;
-  --status-blocked: #C8324D;
 }
 
 * {
@@ -68,7 +70,7 @@ textarea {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .focus-input {
