@@ -57,6 +57,7 @@ export interface Database {
           branch:               string | null
           pr_number:            number | null
           assignee_id:          string | null
+          parent_id:            string | null
           created_at:           string
           updated_at:           string
         }
@@ -78,6 +79,7 @@ export interface Database {
           branch?:              string | null
           pr_number?:           number | null
           assignee_id?:         string | null
+          parent_id?:           string | null
           created_at?:          string
           updated_at?:          string
         }
@@ -98,6 +100,7 @@ export interface Database {
           branch?:              string | null
           pr_number?:           number | null
           assignee_id?:         string | null
+          parent_id?:           string | null
           updated_at?:          string
         }
       }

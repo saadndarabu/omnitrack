@@ -32,6 +32,8 @@ export type Ticket = {
   branch: string | null
   prNumber: number | null
   assignee: User | null
+  parentId: string | null
+  subtasks: Ticket[]
   createdAt: string
   updatedAt: string
   comments: TicketComment[]

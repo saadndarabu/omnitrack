@@ -7,18 +7,42 @@ import type { Status } from "@/lib/status"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Db = SupabaseClient<Database, any, any>
 
-// ── Row shape returned by the join query ─────────────────────
+// ── Row shapes ────────────────────────────────────────────────
 
-type TicketRow = Database["public"]["Tables"]["tickets"]["Row"] & {
-  assignee: Database["public"]["Tables"]["users"]["Row"] | null
-  ticket_comments: Array<
-    Database["public"]["Tables"]["ticket_comments"]["Row"] & {
-      author: Database["public"]["Tables"]["users"]["Row"]
-    }
-  >
+type UserRow    = Database["public"]["Tables"]["users"]["Row"]
+type CommentRow = Database["public"]["Tables"]["ticket_comments"]["Row"] & { author: UserRow }
+type TicketBaseRow = Database["public"]["Tables"]["tickets"]["Row"] & {
+  assignee:        UserRow | null
+  ticket_comments: CommentRow[]
 }
 
-function rowToTicket(row: TicketRow): Ticket {
+// Top-level rows include inline subtask rows (no recursive nesting).
+type TicketRow = TicketBaseRow & {
+  subtasks: TicketBaseRow[]
+}
+
+// ── Mappers ───────────────────────────────────────────────────
+
+function rowToUser(row: UserRow): User {
+  return {
+    id:       row.id,
+    name:     row.name,
+    email:    row.email as User["email"],
+    initials: row.initials,
+    role:     row.role as User["role"]
+  }
+}
+
+function rowToComment(row: CommentRow): TicketComment {
+  return {
+    id:        row.id,
+    author:    rowToUser(row.author),
+    body:      row.body,
+    createdAt: row.created_at
+  }
+}
+
+function baseRowToTicket(row: TicketBaseRow, subtasks: Ticket[] = []): Ticket {
   return {
     id:                  row.id,
     title:               row.title,
@@ -37,6 +61,8 @@ function rowToTicket(row: TicketRow): Ticket {
     branch:              row.branch,
     prNumber:            row.pr_number,
     assignee:            row.assignee ? rowToUser(row.assignee) : null,
+    parentId:            row.parent_id,
+    subtasks,
     createdAt:           row.created_at,
     updatedAt:           row.updated_at,
     comments:            (row.ticket_comments ?? [])
@@ -45,33 +71,24 @@ function rowToTicket(row: TicketRow): Ticket {
   }
 }
 
-function rowToUser(row: Database["public"]["Tables"]["users"]["Row"]): User {
-  return {
-    id:       row.id,
-    name:     row.name,
-    email:    row.email as User["email"],
-    initials: row.initials,
-    role:     row.role as User["role"]
-  }
+function rowToTicket(row: TicketRow): Ticket {
+  const subtasks = (row.subtasks ?? []).map((s) => baseRowToTicket(s))
+  return baseRowToTicket(row, subtasks)
 }
 
-function rowToComment(
-  row: Database["public"]["Tables"]["ticket_comments"]["Row"] & {
-    author: Database["public"]["Tables"]["users"]["Row"]
-  }
-): TicketComment {
-  return {
-    id:        row.id,
-    author:    rowToUser(row.author),
-    body:      row.body,
-    createdAt: row.created_at
-  }
-}
+// Subtasks are fetched inline under their parent. The query returns
+// all top-level tickets (parent_id IS NULL) with their subtasks nested.
+const SUBTASK_SELECT = `
+  *,
+  assignee:users!tickets_assignee_id_fkey(*),
+  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*))
+` as const
 
 const TICKET_SELECT = `
   *,
   assignee:users!tickets_assignee_id_fkey(*),
-  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*))
+  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*)),
+  subtasks:tickets!tickets_parent_id_fkey(${SUBTASK_SELECT})
 ` as const
 
 // ── Filter / sort params ─────────────────────────────────────
@@ -101,13 +118,13 @@ export async function dbGetTickets(
   db: Db,
   { filters, sort }: TicketListOptions = {}
 ): Promise<Ticket[]> {
-  let query = db.from("tickets").select(TICKET_SELECT)
+  // Only fetch top-level tickets; subtasks are nested inside them.
+  let query = db.from("tickets").select(TICKET_SELECT).is("parent_id", null)
 
-  // Filters
-  if (filters?.status)     query = query.eq("status",   filters.status)
-  if (filters?.priority)   query = query.eq("priority", filters.priority)
-  if (filters?.project)    query = query.eq("project",  filters.project)
-  if (filters?.area)       query = query.eq("area",     filters.area)
+  if (filters?.status)     query = query.eq("status",    filters.status)
+  if (filters?.priority)   query = query.eq("priority",  filters.priority)
+  if (filters?.project)    query = query.eq("project",   filters.project)
+  if (filters?.area)       query = query.eq("area",      filters.area)
   if (filters?.component)  query = query.eq("component", filters.component)
   if (filters?.workType)   query = query.eq("work_type", filters.workType)
 
@@ -117,14 +134,11 @@ export async function dbGetTickets(
     query = query.eq("assignee_id", filters.assigneeId)
   }
 
-  // Full-text search across id, title, labels (DB-side)
-  // Deeper field search (description, assignee name) is done client-side in the UI
   if (filters?.search) {
     const term = `%${filters.search}%`
     query = query.or(`id.ilike.${term},title.ilike.${term}`)
   }
 
-  // Sort
   const { field = "updated_at", dir = "desc" } = sort ?? {}
   query = query.order(field, { ascending: dir === "asc" })
 
@@ -161,6 +175,7 @@ export type CreateTicketInput = {
   acceptanceCriteria?: string[]
   labels?:             string[]
   assigneeId?:         string | null
+  parentId?:           string | null
 }
 
 export async function dbCreateTicket(db: Db, input: CreateTicketInput): Promise<Ticket> {
@@ -180,7 +195,8 @@ export async function dbCreateTicket(db: Db, input: CreateTicketInput): Promise<
       due_date:            input.dueDate ?? null,
       acceptance_criteria: input.acceptanceCriteria ?? [],
       labels:              input.labels ?? [],
-      assignee_id:         input.assigneeId ?? null
+      assignee_id:         input.assigneeId ?? null,
+      parent_id:           input.parentId ?? null
     })
     .select(TICKET_SELECT)
     .single()
@@ -208,6 +224,7 @@ export type UpdateTicketInput = Partial<{
   branch:              string | null
   prNumber:            number | null
   assigneeId:          string | null
+  parentId:            string | null
 }>
 
 export async function dbUpdateTicket(
@@ -233,6 +250,7 @@ export async function dbUpdateTicket(
   if (input.branch              !== undefined) patch.branch              = input.branch
   if (input.prNumber            !== undefined) patch.pr_number           = input.prNumber
   if (input.assigneeId          !== undefined) patch.assignee_id         = input.assigneeId
+  if (input.parentId            !== undefined) patch.parent_id           = input.parentId
 
   const { data, error } = await db
     .from("tickets")
@@ -268,9 +286,7 @@ export async function dbAddComment(
 
   if (error) throw error
   return rowToComment(
-    data as Database["public"]["Tables"]["ticket_comments"]["Row"] & {
-      author: Database["public"]["Tables"]["users"]["Row"]
-    }
+    data as CommentRow
   )
 }
 

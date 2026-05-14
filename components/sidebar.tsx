@@ -5,12 +5,9 @@ import {
   ChevronRight,
   FolderKanban,
   LayoutDashboard,
-  ListTodo,
-  Moon,
-  Sun
+  ListTodo
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useTheme } from "@/lib/theme"
 
 const primaryItems = [
   { label: "Dashboard", Icon: LayoutDashboard, href: "/dashboard" },
@@ -27,7 +24,6 @@ export function Sidebar({
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
 }) {
-  const { theme, toggle } = useTheme()
   return (
     <aside
       data-expanded={expanded}
@@ -95,20 +91,6 @@ export function Sidebar({
         </nav>
 
         <div className="mt-auto" />
-
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-          title={theme === "dark" ? "Light mode" : "Dark mode"}
-          className={cn(
-            "mb-2 flex h-9 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]",
-            expanded ? "justify-between px-2.5" : "justify-center px-0"
-          )}
-        >
-          {expanded ? <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span> : null}
-          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
 
         <button
           type="button"

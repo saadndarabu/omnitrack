@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { dbGetTickets, dbCreateTicket, dbNextTicketId } from "@/lib/db/tickets"
+import { dbGetTickets, dbCreateTicket, dbNextTicketId, dbGetTicketById } from "@/lib/db/tickets"
 import type { TicketFilters, TicketSortField, SortDirection } from "@/lib/db/tickets"
 import type { Status } from "@/lib/status"
 import type { Ticket } from "@/types/ticket"
 
 // GET /api/tickets
-// Query params: status, priority, assigneeId, project, area, component, workType, search, sortField, sortDir
 export async function GET(request: Request) {
   try {
     const db     = await createSupabaseServerClient()
@@ -53,11 +52,36 @@ export async function GET(request: Request) {
 }
 
 // POST /api/tickets
-// Body: CreateTicketInput (minus id, which is auto-assigned)
 export async function POST(request: Request) {
   try {
     const db   = await createSupabaseServerClient()
     const body = await request.json()
+
+    const parentId: string | null = body.parentId ?? null
+
+    if (parentId) {
+      const parent = await dbGetTicketById(db, parentId)
+
+      if (!parent) {
+        return NextResponse.json({ error: "Parent ticket not found" }, { status: 422 })
+      }
+
+      // No nesting beyond one level
+      if (parent.parentId) {
+        return NextResponse.json(
+          { error: "Subtasks cannot have their own subtasks" },
+          { status: 422 }
+        )
+      }
+
+      // Subtask due date must not exceed parent due date
+      if (body.dueDate && parent.dueDate && body.dueDate > parent.dueDate) {
+        return NextResponse.json(
+          { error: `Subtask due date cannot exceed parent due date (${parent.dueDate})` },
+          { status: 422 }
+        )
+      }
+    }
 
     const id = await dbNextTicketId(db)
 
@@ -75,7 +99,8 @@ export async function POST(request: Request) {
       dueDate:             body.dueDate  ?? null,
       acceptanceCriteria:  body.acceptanceCriteria ?? [],
       labels:              body.labels ?? [],
-      assigneeId:          body.assigneeId ?? null
+      assigneeId:          body.assigneeId ?? null,
+      parentId
     })
 
     return NextResponse.json(ticket, { status: 201 })

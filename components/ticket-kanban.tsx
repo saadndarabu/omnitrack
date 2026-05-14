@@ -296,11 +296,11 @@ export function TicketKanban({
 
   return (
     <div>
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-        <div className="relative flex h-8 min-w-0 max-w-[360px] flex-1 items-center">
+      <div className="mx-auto mb-3 flex max-w-[1440px] items-center gap-2 px-3 sm:px-6 lg:px-8">
+        <div className="relative flex h-[40px] min-w-0 max-w-[280px] flex-1 items-center">
           <Search
             size={14}
-            className="pointer-events-none absolute left-2.5 text-[var(--text-faint)]"
+            className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
           />
           <input
             type="text"
@@ -308,20 +308,19 @@ export function TicketKanban({
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search board…"
             aria-label="Search board"
-            className="h-8 w-full rounded-md border-[0.5px] border-[var(--border)] bg-[var(--bg)] pl-8 pr-2 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
+            className="h-[40px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
           />
           {search ? (
             <button
               type="button"
               onClick={() => setSearch("")}
               aria-label="Clear search"
-              className="absolute right-1.5 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+              className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
             >
               <X size={12} />
             </button>
           ) : null}
         </div>
-
       </div>
 
       <DndContext
@@ -333,7 +332,7 @@ export function TicketKanban({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="flex max-h-[calc(100vh-196px)] gap-2 overflow-x-auto px-3 py-2 sm:px-6 lg:px-8">
+        <div className="flex max-h-[calc(100vh-196px)] gap-3 overflow-x-auto px-3 py-2 sm:px-6 lg:px-8">
           {STATUSES.map((status) => (
             <KanbanColumn
               key={status}
@@ -361,7 +360,7 @@ export function TicketKanban({
         </DragOverlay>
       </DndContext>
 
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between border-t-[0.5px] border-[var(--border)] px-3 py-2 text-[11px] text-[var(--text-faint)] sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between border-t border-[var(--border)] px-3 py-2.5 text-[11px] text-[var(--text-faint)] sm:px-6 lg:px-8">
         <span>
           {filteredTickets.length} of {tickets.length} tickets
         </span>
@@ -398,14 +397,14 @@ function KanbanColumn({
   const [quickCreateOpen, setQuickCreateOpen] = useState(false)
 
   return (
-    <section className="flex max-h-[calc(100vh-232px)] min-w-[280px] max-w-[280px] flex-col rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_64%,transparent)]">
-      <header className="sticky top-0 z-[2] flex h-10 items-center justify-between border-b-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_54%,var(--bg))] px-2.5">
+    <section className="flex max-h-[calc(100vh-232px)] min-w-[280px] max-w-[280px] flex-col overflow-hidden rounded-[18px] border border-[#E5E1DA] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_4px_12px_rgba(16,24,40,0.04)]">
+      <header className="sticky top-0 z-[2] flex h-11 items-center justify-between border-b border-[#E5E1DA] bg-[#F3F1EC] px-3">
         <span className="inline-flex min-w-0 items-center gap-2">
           <StatusIcon status={status} size={14} />
-          <span className="truncate text-[12px] font-semibold text-[var(--text)]">
+          <span className="truncate text-[11px] font-[650] uppercase tracking-[0.06em] text-[#5E6470]">
             {STATUS_LABELS[status]}
           </span>
-          <span className="rounded-full border-[0.5px] border-[var(--border)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[var(--text-muted)]">
+          <span className="rounded-full border border-[#E3E0D8] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[var(--text-muted)]">
             {tickets.length}
           </span>
         </span>
@@ -431,16 +430,15 @@ function KanbanColumn({
         <div
           ref={setNodeRef}
           className={cn(
-            "flex flex-1 flex-col gap-2 overflow-y-auto p-2 transition-colors",
-            isOver &&
-              "bg-[color-mix(in_srgb,var(--accent)_7%,transparent)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--accent)_22%,transparent)]"
+            "flex flex-1 flex-col gap-2 overflow-y-auto p-2.5 transition-colors",
+            isOver && "bg-[var(--accent-soft)]"
           )}
         >
           {tickets.length === 0 ? (
             <button
               type="button"
               onClick={() => setQuickCreateOpen(true)}
-              className="flex h-24 flex-col items-center justify-center gap-2 rounded-md border-[0.5px] border-dashed border-[var(--border)] text-[12px] text-[var(--text-faint)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+              className="flex h-24 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#E3E0D8] text-[12px] text-[var(--text-faint)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
             >
               <SquareDashed size={16} />
               Add ticket
@@ -459,7 +457,7 @@ function KanbanColumn({
               <button
                 type="button"
                 onClick={() => setQuickCreateOpen(true)}
-                className="flex h-8 items-center justify-center gap-1.5 rounded-md border-[0.5px] border-dashed border-[var(--border)] text-[11px] text-[var(--text-faint)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+                className="flex h-8 items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#E3E0D8] text-[11px] text-[var(--text-faint)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
               >
                 <SquareDashed size={13} />
                 Add ticket
@@ -532,12 +530,10 @@ function KanbanCardContent({
   return (
     <div
       className={cn(
-        "group rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_84%,var(--bg))] p-2.5 transition-[background-color,border-color,box-shadow] duration-[120ms] hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)]",
-        selected && "border-[color-mix(in_srgb,var(--accent)_42%,var(--border))]",
-        blocked &&
-          "border-[color-mix(in_srgb,var(--status-blocked)_34%,var(--border))]",
-        dragging &&
-          "border-[color-mix(in_srgb,var(--accent)_42%,var(--border))] bg-[var(--surface-2)] shadow-2xl shadow-black/30"
+        "group rounded-xl border border-[#E5E1DA] bg-[var(--surface)] p-3 transition-[background-color,border-color,box-shadow] duration-[120ms] hover:border-[var(--border-strong)] hover:bg-[#FAF9F6] hover:shadow-[0_2px_8px_rgba(16,24,40,0.06)]",
+        selected && "border-[var(--accent)] bg-[var(--accent-soft)]",
+        blocked && "border-[color-mix(in_srgb,var(--status-blocked)_34%,#E5E1DA)]",
+        dragging && "border-[var(--accent)] bg-[var(--surface)] shadow-[0_8px_32px_rgba(16,24,40,0.14)] rotate-[0.5deg]"
       )}
     >
       <div className="mb-2 flex items-center justify-between gap-2">
@@ -566,7 +562,7 @@ function KanbanCardContent({
         </div>
       ) : null}
 
-      <div className="mt-2 flex items-center justify-between gap-2 border-t-[0.5px] border-[var(--border)] pt-2">
+      <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-[#EEEAE3] pt-2.5">
         <span className="flex min-w-0 items-center gap-2">
           <Avatar user={ticket.assignee} size={22} />
           <span className="truncate text-[11px] text-[var(--text-muted)]">
@@ -635,7 +631,7 @@ function QuickCreateCard({
   return (
     <form
       onSubmit={submit}
-      className="m-2 mb-0 rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_72%,var(--bg))] p-2"
+      className="m-2.5 mb-0 rounded-xl border border-[#E5E1DA] bg-[var(--surface)] p-2.5 shadow-[0_1px_4px_rgba(16,24,40,0.04)]"
     >
       <input
         autoFocus
@@ -646,8 +642,8 @@ function QuickCreateCard({
         }}
         placeholder="Ticket title"
         className={cn(
-          "h-8 w-full rounded-md border-[0.5px] bg-[var(--bg)] px-2 text-[12px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none",
-          error ? "border-[var(--status-blocked)]" : "border-[var(--border)]"
+          "h-9 w-full rounded-lg border bg-[var(--surface-2)] px-3 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none",
+          error ? "border-[var(--status-blocked)]" : "border-[#E3E0D8]"
         )}
       />
 
@@ -689,13 +685,13 @@ function QuickCreateCard({
         <button
           type="button"
           onClick={onCancel}
-          className="h-7 rounded-md px-2 text-[12px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+          className="h-8 rounded-lg px-2.5 text-[12px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="h-7 rounded-md border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-2 text-[12px] font-semibold text-[var(--accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)]"
+          className="h-8 rounded-lg bg-[#111827] px-2.5 text-[12px] font-semibold text-white shadow-[0_4px_10px_rgba(17,24,39,0.12)] transition-colors hover:bg-[#1f2937]"
         >
           Add
         </button>
@@ -720,7 +716,7 @@ function QuickSelect({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
-        "h-7 min-w-0 rounded-md border-[0.5px] border-[var(--border)] bg-[var(--bg)] px-1.5 text-[11px] text-[var(--text-muted)] focus-visible:focus-input focus-visible:outline-none",
+        "h-8 min-w-0 rounded-lg border border-[#E3E0D8] bg-[var(--surface-2)] px-2 text-[12px] text-[var(--text-muted)] focus-visible:focus-input focus-visible:outline-none",
         className
       )}
     >

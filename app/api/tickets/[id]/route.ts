@@ -23,12 +23,40 @@ export async function GET(_req: Request, { params }: RouteContext) {
 }
 
 // PATCH /api/tickets/[id]
-// Body: UpdateTicketInput — any subset of ticket fields
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
     const { id } = await params
     const db     = await createSupabaseServerClient()
     const body   = await request.json()
+
+    // If updating dueDate on a subtask, enforce it doesn't exceed parent's dueDate.
+    if (body.dueDate) {
+      const current = await dbGetTicketById(db, id)
+      if (current?.parentId) {
+        const parent = await dbGetTicketById(db, current.parentId)
+        if (parent?.dueDate && body.dueDate > parent.dueDate) {
+          return NextResponse.json(
+            { error: `Subtask due date cannot exceed parent due date (${parent.dueDate})` },
+            { status: 422 }
+          )
+        }
+      }
+
+      // If this is a parent, ensure no subtask exceeds the new (earlier) due date.
+      if (current && current.subtasks.length > 0) {
+        const violating = current.subtasks.find(
+          (s) => s.dueDate && s.dueDate > body.dueDate
+        )
+        if (violating) {
+          return NextResponse.json(
+            {
+              error: `Subtask ${violating.id} has a due date (${violating.dueDate}) that would exceed the new parent due date`
+            },
+            { status: 422 }
+          )
+        }
+      }
+    }
 
     const ticket = await dbUpdateTicket(db, id, body)
     return NextResponse.json(ticket)

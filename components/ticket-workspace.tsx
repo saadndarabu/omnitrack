@@ -142,8 +142,90 @@ export function TicketWorkspace({
 
   function patchTicket(ticketId: string, patcher: (ticket: Ticket) => Ticket) {
     setTickets((currentTickets) =>
-      currentTickets.map((ticket) => (ticket.id === ticketId ? patcher(ticket) : ticket))
+      currentTickets.map((ticket) => {
+        if (ticket.id === ticketId) return patcher(ticket)
+        // Also patch within subtasks
+        const patchedSubtasks = ticket.subtasks.map((s) =>
+          s.id === ticketId ? patcher(s) : s
+        )
+        if (patchedSubtasks !== ticket.subtasks && patchedSubtasks.some((s, i) => s !== ticket.subtasks[i])) {
+          return { ...ticket, subtasks: patchedSubtasks }
+        }
+        return ticket
+      })
     )
+  }
+
+  function addSubtaskToParent(parentId: string, subtask: Ticket) {
+    setTickets((currentTickets) =>
+      currentTickets.map((ticket) =>
+        ticket.id === parentId
+          ? { ...ticket, subtasks: [...ticket.subtasks, subtask] }
+          : ticket
+      )
+    )
+  }
+
+  function removeSubtaskFromParent(parentId: string, subtaskId: string) {
+    setTickets((currentTickets) =>
+      currentTickets.map((ticket) =>
+        ticket.id === parentId
+          ? { ...ticket, subtasks: ticket.subtasks.filter((s) => s.id !== subtaskId) }
+          : ticket
+      )
+    )
+  }
+
+  async function createSubtask(
+    parentId: string,
+    input: Parameters<typeof createTicket>[0]
+  ) {
+    const now = new Date().toISOString()
+    const parentTicket = tickets.find((t) => t.id === parentId)
+    if (!parentTicket) return
+
+    const res = await fetch("/api/tickets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title:               input.title,
+        description:         input.description,
+        workType:            input.workType,
+        status:              input.status,
+        priority:            input.priority,
+        project:             "platform",
+        area:                input.area,
+        component:           input.component,
+        estimate:            input.estimate,
+        dueDate:             input.dueDate,
+        acceptanceCriteria:  input.acceptanceCriteria,
+        labels:              input.labels,
+        assigneeId:          input.assignee?.id ?? null,
+        parentId
+      })
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error("createSubtask failed", err)
+      return
+    }
+
+    const subtask: Ticket = await res.json()
+    addSubtaskToParent(parentId, subtask)
+
+    await fetch(`/api/tickets/${subtask.id}/history`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        actorId:  currentUser.id,
+        field:    "created",
+        oldValue: null,
+        newValue: subtask.title
+      })
+    }).catch(() => {})
+
+    return subtask
   }
 
   function recordHistory(ticketId: string, field: string, oldValue: string | null, newValue: string | null) {
@@ -302,6 +384,8 @@ export function TicketWorkspace({
       branch: null,
       prNumber: null,
       assignee: input.assignee,
+      parentId: null,
+      subtasks: [],
       createdAt: now,
       updatedAt: now,
       comments: []
@@ -679,11 +763,19 @@ export function TicketWorkspace({
         <TicketDetail
           ticket={modalTicket}
           users={users}
+          currentUser={currentUser}
           onAssigneeChange={(user) => updateTicket(modalTicket.id, { assignee: user })}
           onClose={closeModal}
           onStatusChange={(status) => requestStatusChange(modalTicket.id, status)}
           onTitleChange={(title) => updateTitle(modalTicket.id, title)}
           onUpdate={(patch) => updateTicket(modalTicket.id, patch)}
+          onSubtaskCreate={(input) => createSubtask(modalTicket.id, input)}
+          onSubtaskUpdate={(subtaskId, patch) => updateTicket(subtaskId, patch)}
+          onSubtaskDelete={(subtaskId) => {
+            fetch(`/api/tickets/${subtaskId}`, { method: "DELETE" }).catch(() => {})
+            if (modalTicket.id) removeSubtaskFromParent(modalTicket.id, subtaskId)
+          }}
+          onSubtaskOpen={openTicket}
         />
       ) : null}
 
