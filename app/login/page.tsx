@@ -8,7 +8,14 @@ export default async function LoginPage({
   searchParams?: Promise<{ error?: string }>
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined
-  const hasError = Boolean(resolvedSearchParams?.error)
+  const errorCode = resolvedSearchParams?.error
+
+  const errorMessage =
+    errorCode === "domain"
+      ? "Access is restricted to @sirp.io accounts."
+      : errorCode
+      ? "Sign-in failed. Please try again."
+      : null
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
@@ -22,10 +29,8 @@ export default async function LoginPage({
             Continue with Google
           </Button>
         </form>
-        {hasError ? (
-          <p className="mt-3 text-[13px] text-[var(--text-muted)]">
-            Google sign-in is not configured for this environment.
-          </p>
+        {errorMessage ? (
+          <p className="mt-3 text-[13px] text-[var(--text-muted)]">{errorMessage}</p>
         ) : null}
       </div>
     </main>

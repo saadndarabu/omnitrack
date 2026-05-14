@@ -50,7 +50,8 @@ function rowToUser(row: Database["public"]["Tables"]["users"]["Row"]): User {
     id:       row.id,
     name:     row.name,
     email:    row.email as User["email"],
-    initials: row.initials
+    initials: row.initials,
+    role:     row.role as User["role"]
   }
 }
 

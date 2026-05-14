@@ -6,25 +6,29 @@ export const users: User[] = [
     id: "user_saadia",
     name: "Saadia Noor",
     email: "saadia@sirp.io",
-    initials: "SN"
+    initials: "SN",
+    role: "admin"
   },
   {
     id: "user_haris",
     name: "Haris Malik",
     email: "haris@sirp.io",
-    initials: "HM"
+    initials: "HM",
+    role: "member"
   },
   {
     id: "user_mina",
     name: "Mina Qureshi",
     email: "mina@sirp.io",
-    initials: "MQ"
+    initials: "MQ",
+    role: "member"
   },
   {
     id: "user_omar",
     name: "Omar Shah",
     email: "omar@sirp.io",
-    initials: "OS"
+    initials: "OS",
+    role: "viewer"
   }
 ]
 

@@ -2,6 +2,8 @@
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
+export type UserRoleDb   = "admin" | "member" | "viewer"
+
 export type WorkTypeDb   = "feature" | "enhancement" | "bug" | "task"
 export type StatusDb     = "backlog" | "todo" | "in_progress" | "in_review" | "done" | "blocked"
 export type PriorityDb   = "critical" | "high" | "medium" | "low"
@@ -18,6 +20,7 @@ export interface Database {
           name:       string
           email:      string
           initials:   string
+          role:       UserRoleDb
           created_at: string
         }
         Insert: {
@@ -25,12 +28,14 @@ export interface Database {
           name:        string
           email:       string
           initials:    string
+          role?:       UserRoleDb
           created_at?: string
         }
         Update: {
           name?:       string
           email?:      string
           initials?:   string
+          role?:       UserRoleDb
         }
       }
       tickets: {
@@ -163,6 +168,7 @@ export interface Database {
       }
     }
     Enums: {
+      user_role:          UserRoleDb
       work_type:          WorkTypeDb
       ticket_status:      StatusDb
       priority:           PriorityDb

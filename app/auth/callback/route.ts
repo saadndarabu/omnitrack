@@ -7,7 +7,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createSupabaseServerClient()
-    await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+    if (error || !data.user) {
+      return NextResponse.redirect(new URL("/login?error=oauth", request.url))
+    }
+
+    if (!data.user.email?.endsWith("@sirp.io")) {
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL("/login?error=domain", request.url))
+    }
   }
 
   return NextResponse.redirect(new URL("/dashboard", request.url))
