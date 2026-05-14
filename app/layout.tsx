@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, JetBrains_Mono } from "next/font/google"
 import { ThemeProvider } from "@/lib/theme"
 import { ToastProvider } from "@/components/toast"
+import { Chatbot } from "@/components/chatbot"
 import "./globals.css"
 
 const geist = Geist({
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <ToastProvider>{children}</ToastProvider>
+          <Chatbot />
         </ThemeProvider>
       </body>
     </html>
