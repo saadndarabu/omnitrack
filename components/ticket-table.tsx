@@ -35,7 +35,6 @@ import {
   ChevronRight,
   GitBranch,
   GripVertical,
-  Search,
   SlidersHorizontal,
   X
 } from "lucide-react"
@@ -75,12 +74,16 @@ const PAGE_SIZE = 25
 
 export function TicketTable({
   attachmentCounts = {},
+  globalFilter = "",
+  onGlobalFilterChange,
   onOpen,
   selectedId,
   tickets,
   users
 }: {
   attachmentCounts?: Record<string, number>
+  globalFilter?: string
+  onGlobalFilterChange?: (value: string) => void
   onOpen: (ticketId: string) => void
   selectedId: string | null
   tickets: Ticket[]
@@ -93,7 +96,6 @@ export function TicketTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     DEFAULT_VISIBLE_COLUMNS
   )
-  const [globalFilter, setGlobalFilter] = useState("")
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [sorting, setSorting] = useState<SortingState>([{ id: "updatedAt", desc: true }])
 
@@ -152,7 +154,7 @@ export function TicketTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnOrderChange: setColumnOrder,
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: (value) => onGlobalFilterChange?.(value),
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     initialState: {
@@ -215,32 +217,6 @@ export function TicketTable({
     <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
       {/* Toolbar */}
       <div className="mb-3 flex items-center gap-2">
-        {/* Search */}
-        <div className="relative flex h-[40px] min-w-0 max-w-[280px] flex-1 items-center">
-          <Search
-            size={14}
-            className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
-          />
-          <input
-            type="text"
-            value={globalFilter}
-            onChange={(event) => setGlobalFilter(event.target.value)}
-            placeholder="Search tickets…"
-            aria-label="Search tickets"
-            className="h-[40px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
-          />
-          {globalFilter ? (
-            <button
-              type="button"
-              onClick={() => setGlobalFilter("")}
-              aria-label="Clear search"
-              className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-            >
-              <X size={12} />
-            </button>
-          ) : null}
-        </div>
-
         {/* Filters */}
         <Popover
           panelClassName="w-[280px] p-3"

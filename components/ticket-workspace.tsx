@@ -1,7 +1,6 @@
 "use client"
 
 import { FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import { ChevronDown, HelpCircle, Plus, Search, X } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { CommandMenu } from "@/components/command-menu"
@@ -60,7 +59,6 @@ export function TicketWorkspace({
   initialTickets: Ticket[]
   users: User[]
 }) {
-  const router = useRouter()
   const [tickets, setTickets] = useState(initialTickets)
   const [selectedId, setSelectedId] = useState<string | null>(activeTicketId ?? null)
   const [commandOpen, setCommandOpen] = useState(false)
@@ -68,15 +66,12 @@ export function TicketWorkspace({
   const [helpOpen, setHelpOpen] = useState(false)
   const [assignTicketId, setAssignTicketId] = useState<string | null>(null)
   const [blockTicketId, setBlockTicketId] = useState<string | null>(null)
-  const [localModalTicketId, setLocalModalTicketId] = useState<string | null>(null)
+  const [modalStack, setModalStack] = useState<string[]>(activeTicketId ? [activeTicketId] : [])
   const [editingTitleTicketId, setEditingTitleTicketId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<TicketViewMode>("table")
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-
-  const initialTicketIds = useMemo(
-    () => new Set(initialTickets.map((ticket) => ticket.id)),
-    [initialTickets]
-  )
+  const [globalFilter, setGlobalFilter] = useState("")
+  const searchRef = useRef<HTMLInputElement>(null)
 
   const visibleTickets = tickets
 
@@ -84,17 +79,19 @@ export function TicketWorkspace({
     () => visibleTickets.map((ticket) => ticket.id),
     [visibleTickets]
   )
-  const modalTicketId = activeTicketId ?? localModalTicketId
-  const modalTicket =
-    tickets.find((ticket) => ticket.id.toLowerCase() === modalTicketId?.toLowerCase()) ??
-    null
+  const modalTicketId = modalStack.length > 0 ? modalStack[modalStack.length - 1] : null
+  const modalParentId = modalStack.length > 1 ? modalStack[modalStack.length - 2] : null
 
-  useEffect(() => {
-    if (activeTicketId) {
-      setSelectedId(activeTicketId)
-      setLocalModalTicketId(null)
-    }
-  }, [activeTicketId])
+  function findTicket(id: string) {
+    return (
+      tickets.find((t) => t.id.toLowerCase() === id.toLowerCase()) ??
+      tickets.flatMap((t) => t.subtasks).find((s) => s.id.toLowerCase() === id.toLowerCase()) ??
+      null
+    )
+  }
+
+  const modalTicket = modalTicketId ? findTicket(modalTicketId) : null
+  const modalParent = modalParentId ? findTicket(modalParentId) : null
 
   useEffect(() => {
     if (visibleTicketIds.length === 0) {
@@ -108,23 +105,28 @@ export function TicketWorkspace({
   }, [selectedId, visibleTicketIds])
 
   function closeModal() {
-    setLocalModalTicketId(null)
     setEditingTitleTicketId(null)
-
-    if (activeTicketId) {
-      router.push("/tickets")
+    if (modalStack.length > 1) {
+      const parentId = modalStack[modalStack.length - 2]
+      setModalStack((s) => s.slice(0, -1))
+      window.history.replaceState(null, "", `/t/${parentId}`)
+    } else {
+      setModalStack([])
+      window.history.replaceState(null, "", "/tickets")
     }
   }
 
   function openTicket(ticketId: string) {
     setSelectedId(ticketId)
-
-    if (initialTicketIds.has(ticketId)) {
-      router.push(`/t/${ticketId}`)
-      return
-    }
-
-    setLocalModalTicketId(ticketId)
+    setModalStack((s) => {
+      // If already open at top of stack, do nothing
+      if (s.length > 0 && s[s.length - 1] === ticketId) return s
+      // If it's a top-level ticket opening fresh (not from within a modal), reset stack
+      if (s.length === 0) return [ticketId]
+      // Otherwise push (navigating from parent → subtask)
+      return [...s, ticketId]
+    })
+    window.history.replaceState(null, "", `/t/${ticketId}`)
   }
 
   function moveSelection(delta: number) {
@@ -396,7 +398,7 @@ export function TicketWorkspace({
     setTickets((currentTickets) => [ticket, ...currentTickets])
     setSelectedId(id)
     if (options.openDetail !== false) {
-      setLocalModalTicketId(id)
+      openTicket(id)
     }
     setComposerOpen(false)
 
@@ -620,7 +622,7 @@ export function TicketWorkspace({
 
       if (event.key === "/") {
         event.preventDefault()
-        setCommandOpen(true)
+        searchRef.current?.focus()
         return
       }
 
@@ -673,7 +675,7 @@ export function TicketWorkspace({
         event.preventDefault()
         const ticketId = modalTicketId ?? selectedId
         if (ticketId) {
-          setLocalModalTicketId(ticketId)
+          setModalStack((s) => (s.includes(ticketId) ? s : [...s, ticketId]))
           setEditingTitleTicketId(ticketId)
         }
       }
@@ -687,7 +689,7 @@ export function TicketWorkspace({
     commandOpen,
     composerOpen,
     helpOpen,
-    modalTicketId,
+    modalStack,
     selectedId,
     tickets,
     visibleTickets
@@ -718,9 +720,32 @@ export function TicketWorkspace({
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
-              <IconButton label="Search" onClick={() => setCommandOpen(true)}>
-                <Search size={17} />
-              </IconButton>
+              <div className="relative hidden items-center sm:flex">
+                <Search
+                  size={13}
+                  className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
+                />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={globalFilter}
+                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  onKeyDown={(e) => e.key === "Escape" && (setGlobalFilter(""), e.currentTarget.blur())}
+                  placeholder="Search…"
+                  aria-label="Search tickets"
+                  className="h-[34px] w-[200px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:w-[260px] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-[width] duration-150"
+                />
+                {globalFilter ? (
+                  <button
+                    type="button"
+                    onClick={() => setGlobalFilter("")}
+                    aria-label="Clear search"
+                    className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:text-[var(--text)]"
+                  >
+                    <X size={12} />
+                  </button>
+                ) : null}
+              </div>
               <IconButton label="Keyboard shortcuts" onClick={() => setHelpOpen(true)}>
                 <HelpCircle size={17} />
               </IconButton>
@@ -740,6 +765,8 @@ export function TicketWorkspace({
               selectedId={selectedId}
               users={users}
               attachmentCounts={attachmentCounts}
+              globalFilter={globalFilter}
+              onGlobalFilterChange={setGlobalFilter}
               onOpen={openTicket}
             />
           ) : (
@@ -764,10 +791,13 @@ export function TicketWorkspace({
 
       {modalTicket ? (
         <TicketDetail
+          key={modalTicket.id}
           ticket={modalTicket}
+          parentTicket={modalParent}
           users={users}
           currentUser={currentUser}
           onAssigneeChange={(user) => updateTicket(modalTicket.id, { assignee: user })}
+          onBack={modalParent ? closeModal : undefined}
           onClose={closeModal}
           onStatusChange={(status) => requestStatusChange(modalTicket.id, status)}
           onTitleChange={(title) => updateTitle(modalTicket.id, title)}

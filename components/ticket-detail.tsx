@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import {
+  ArrowLeft,
   Bug,
   CheckCircle2,
   ChevronDown,
@@ -73,6 +74,7 @@ type SubtaskDraft = {
 export function TicketDetail({
   currentUser,
   onAssigneeChange,
+  onBack,
   onClose,
   onStatusChange,
   onSubtaskCreate,
@@ -81,11 +83,13 @@ export function TicketDetail({
   onSubtaskUpdate,
   onTitleChange,
   onUpdate,
+  parentTicket,
   ticket,
   users
 }: {
   currentUser: User
   onAssigneeChange: (user: User | null) => void
+  onBack?: () => void
   onClose: () => void
   onStatusChange: (status: Status) => void
   onSubtaskCreate: (input: {
@@ -108,6 +112,7 @@ export function TicketDetail({
   onSubtaskUpdate: (subtaskId: string, patch: Partial<Ticket>) => void
   onTitleChange: (title: string) => void
   onUpdate: (patch: Partial<Pick<Ticket, "acceptanceCriteria" | "blockerReason" | "description" | "dueDate" | "estimate" | "workType">>) => void
+  parentTicket?: Ticket | null
   ticket: Ticket
   users: User[]
 }) {
@@ -229,25 +234,37 @@ export function TicketDetail({
       ariaLabel={ticket.id}
       title={
         <div className="flex min-w-0 items-center gap-2">
-          <label className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--surface-2)]">
-            <Icon size={15} className={className} />
-            <select
-              aria-label="Work type"
-              value={ticket.workType}
-              onChange={(event) => onUpdate({ workType: event.target.value as WorkType })}
-              className="absolute inset-0 cursor-pointer opacity-0"
-              title={workTypeLabels[ticket.workType]}
+          {onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back to parent ticket"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-[11px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
             >
-              <option value="feature">Feature</option>
-              <option value="enhancement">Enhancement</option>
-              <option value="bug">Bug</option>
-              <option value="task">Task</option>
-            </select>
-          </label>
+              <ArrowLeft size={12} />
+              <span className="font-mono">{parentTicket?.id}</span>
+            </button>
+          ) : (
+            <label className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--surface-2)]">
+              <Icon size={15} className={className} />
+              <select
+                aria-label="Work type"
+                value={ticket.workType}
+                onChange={(event) => onUpdate({ workType: event.target.value as WorkType })}
+                className="absolute inset-0 cursor-pointer opacity-0"
+                title={workTypeLabels[ticket.workType]}
+              >
+                <option value="feature">Feature</option>
+                <option value="enhancement">Enhancement</option>
+                <option value="bug">Bug</option>
+                <option value="task">Task</option>
+              </select>
+            </label>
+          )}
           <span className="shrink-0 font-mono text-[11px] font-medium text-[var(--text-faint)]">
             {ticket.id}
           </span>
-          {isSubtask && (
+          {isSubtask && !onBack && (
             <span className="shrink-0 rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--text-faint)]">
               Subtask
             </span>
