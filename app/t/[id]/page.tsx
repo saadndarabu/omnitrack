@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic"
 
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { TicketWorkspace } from "@/components/ticket-workspace"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { dbGetTicketById, dbGetTickets } from "@/lib/db/tickets"
-import { dbGetUsers } from "@/lib/db/users"
+import { dbGetCurrentUser, dbGetUsers } from "@/lib/db/users"
 import { dbGetAttachmentCounts } from "@/lib/db/attachments"
-import { currentUser } from "@/lib/mock-data"
 
 export default async function TicketDeepLinkPage({
   params
@@ -16,11 +15,16 @@ export default async function TicketDeepLinkPage({
   const { id } = await params
   const db     = await createSupabaseServerClient()
 
-  const [ticket, tickets, users] = await Promise.all([
+  const [ticket, tickets, users, currentUser] = await Promise.all([
     dbGetTicketById(db, id),
     dbGetTickets(db),
-    dbGetUsers(db)
+    dbGetUsers(db),
+    dbGetCurrentUser(db)
   ])
+
+  if (!currentUser) {
+    redirect("/login")
+  }
 
   if (!ticket) notFound()
 

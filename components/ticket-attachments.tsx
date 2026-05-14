@@ -130,7 +130,6 @@ export function TicketAttachments({
 
     const result = await uploadAttachment({
       ticketId,
-      uploadedBy: currentUser.id,
       file,
       onProgress: setProgress
     })

@@ -33,6 +33,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  GitBranch,
   GripVertical,
   Search,
   SlidersHorizontal,
@@ -44,7 +45,12 @@ import { Popover } from "@/components/ui/popover"
 import {
   COLUMN_LABELS,
   DEFAULT_VISIBLE_COLUMNS,
-  createTicketColumns
+  StatusCell,
+  PriorityCell,
+  WorkTypeCell,
+  OwnerCell,
+  createTicketColumns,
+  type SubtaskContext
 } from "@/components/ticket-table-columns"
 import { STATUS_LABELS, STATUSES, type Status } from "@/lib/status"
 import { cn } from "@/lib/utils"
@@ -80,7 +86,8 @@ export function TicketTable({
   tickets: Ticket[]
   users: User[]
 }) {
-  const columns = useMemo(() => createTicketColumns(attachmentCounts), [attachmentCounts])
+  const [showSubtasks, setShowSubtasks] = useState(false)
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -89,6 +96,25 @@ export function TicketTable({
   const [globalFilter, setGlobalFilter] = useState("")
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
   const [sorting, setSorting] = useState<SortingState>([{ id: "updatedAt", desc: true }])
+
+  const subtaskCtx: SubtaskContext = useMemo(() => ({
+    showSubtasks,
+    expandedIds,
+    onToggleExpand: (id: string) => {
+      setExpandedIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    }
+  }), [showSubtasks, expandedIds])
+
+  const columns = useMemo(
+    () => createTicketColumns(attachmentCounts, subtaskCtx),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [attachmentCounts, showSubtasks, expandedIds]
+  )
 
   const table = useReactTable({
     data: tickets,
@@ -373,6 +399,24 @@ export function TicketTable({
           )}
         </Popover>
 
+        {/* Subtasks toggle */}
+        <button
+          type="button"
+          onClick={() => {
+            setShowSubtasks((v) => !v)
+            if (showSubtasks) setExpandedIds(new Set())
+          }}
+          className={cn(
+            "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
+            showSubtasks
+              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+              : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+          )}
+        >
+          <GitBranch size={13} />
+          Subtasks
+        </button>
+
         {/* Active filter chips */}
         {activeFilters.map((filter) => (
           <span
@@ -421,10 +465,10 @@ export function TicketTable({
                     </td>
                   </tr>
                 ) : (
-                  rows.map((row) => {
+                  rows.flatMap((row) => {
                     const isSelected = row.getIsSelected()
                     const isCurrent = row.original.id === selectedId
-                    return (
+                    const parentRow = (
                       <tr
                         key={row.id}
                         onClick={() => onOpen(row.original.id)}
@@ -444,7 +488,6 @@ export function TicketTable({
                             key={cell.id}
                             className={cn(
                               "h-[58px] border-b border-[#EEEAE3] px-4 align-middle text-[13px] text-[var(--text-muted)] last:border-r-0",
-                              // Vertical separator only after key group boundaries (col 0=checkbox, 1=id, 2=title)
                               cellIndex === 2 ? "border-r border-[#EEEAE3]" : ""
                             )}
                           >
@@ -453,6 +496,23 @@ export function TicketTable({
                         ))}
                       </tr>
                     )
+
+                    const subtaskRows =
+                      showSubtasks &&
+                      expandedIds.has(row.original.id) &&
+                      row.original.subtasks.length > 0
+                        ? row.original.subtasks.map((subtask, si) => (
+                            <SubtaskTableRow
+                              key={subtask.id}
+                              subtask={subtask}
+                              visibleColumns={table.getVisibleLeafColumns()}
+                              isLast={si === row.original.subtasks.length - 1}
+                              onOpen={onOpen}
+                            />
+                          ))
+                        : []
+
+                    return [parentRow, ...subtaskRows]
                   })
                 )}
               </tbody>
@@ -496,6 +556,63 @@ export function TicketTable({
         </div>
       </DndContext>
     </div>
+  )
+}
+
+function SubtaskTableRow({
+  subtask,
+  visibleColumns,
+  isLast,
+  onOpen
+}: {
+  subtask: import("@/types/ticket").Ticket
+  visibleColumns: import("@tanstack/react-table").Column<import("@/types/ticket").Ticket, unknown>[]
+  isLast: boolean
+  onOpen: (id: string) => void
+}) {
+  return (
+    <tr
+      onClick={() => onOpen(subtask.id)}
+      data-ticket-id={subtask.id}
+      className="group cursor-pointer bg-[#FAFAF8] transition-colors duration-[120ms] ease-out hover:bg-[#F5F3EE]"
+    >
+      {visibleColumns.map((col, cellIndex) => {
+        const isTitle = col.id === "title"
+        const isBorderRight = cellIndex === 2
+        return (
+          <td
+            key={col.id}
+            className={cn(
+              "align-middle px-4 text-[12px] text-[var(--text-muted)]",
+              isLast ? "border-b-2 border-[#E0DDD5]" : "border-b border-[#EEEAE3]",
+              isBorderRight ? "border-r border-[#EEEAE3]" : "",
+              isTitle ? "h-[48px]" : "h-[48px]"
+            )}
+          >
+            {isTitle ? (
+              <span className="flex min-w-0 items-center gap-2 pl-5">
+                <span className="h-3 w-px shrink-0 rounded-full bg-[var(--border-strong)]" />
+                <span className="block truncate text-[12px] font-medium text-[var(--text-muted)]">
+                  {subtask.title}
+                </span>
+              </span>
+            ) : col.id === "status" ? (
+              <StatusCell status={subtask.status} />
+            ) : col.id === "priority" ? (
+              <PriorityCell priority={subtask.priority} />
+            ) : col.id === "workType" ? (
+              <WorkTypeCell workType={subtask.workType} />
+            ) : col.id === "owner" ? (
+              <OwnerCell ticket={subtask} />
+            ) : col.id === "id" ? (
+              <span className="font-mono text-[11px] font-medium text-[var(--text-faint)]">
+                {subtask.id.replace(/^SIRP-/i, "")}
+              </span>
+            ) : null}
+          </td>
+        )
+      })}
+    </tr>
   )
 }
 

@@ -40,9 +40,6 @@ const blockerReasons = [
   "External dependency"
 ] as const
 
-const editableTextClass =
-  "w-full rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-faint)] hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
-
 const propertySelectClass =
   "h-7 w-full appearance-none rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
 
@@ -278,53 +275,62 @@ export function TicketDetail({
       <div className="grid min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_300px]">
         {/* Main content */}
         <section className="min-w-0 space-y-5 border-b-[0.5px] border-[var(--border)] p-4 lg:border-b-0 lg:border-r-[0.5px]">
-          <Field label="Description">
-            <textarea
-              value={ticket.description}
-              onChange={(event) => onUpdate({ description: event.target.value })}
-              placeholder="Add description"
-              className={cn(editableTextClass, "min-h-24 resize-none py-0 leading-6 focus:py-2")}
-            />
-          </Field>
-
-          <div className="space-y-2">
-            <div className="text-[11px] font-medium text-[var(--text-faint)]">
-              Acceptance criteria
+          <div className="space-y-1.5">
+            <span className="block text-[11px] font-medium text-[var(--text-faint)]">Description</span>
+            <div className="rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)] px-3 py-2.5">
+              <textarea
+                value={ticket.description}
+                onChange={(event) => onUpdate({ description: event.target.value })}
+                placeholder="Add description"
+                className="w-full resize-none bg-transparent text-[13px] leading-6 text-[var(--text-muted)] outline-none placeholder:text-[var(--text-faint)] hover:text-[var(--text)] focus:text-[var(--text)]"
+                style={{ minHeight: "5rem" }}
+              />
             </div>
-            <div className="space-y-1.5">
-              {ticket.acceptanceCriteria.map((criterion, index) => (
-                <div
-                  key={`${ticket.id}_criterion_${index}`}
-                  className="grid grid-cols-[20px_minmax(0,1fr)_24px] items-center gap-2 rounded-md border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_68%,transparent)] px-2 py-1.5"
-                >
-                  <input
-                    aria-label={`Acceptance criterion ${index + 1}`}
-                    type="checkbox"
-                    className="h-3.5 w-3.5 rounded border-[var(--border-strong)] bg-[var(--surface)] accent-[var(--accent)]"
-                  />
-                  <input
-                    value={criterion}
-                    onChange={(event) => updateCriterion(index, event.target.value)}
-                    placeholder="Acceptance criterion"
-                    className="min-w-0 bg-transparent text-[13px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-faint)]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeCriterion(index)}
-                    aria-label="Remove criterion"
-                    className="h-6 rounded text-[11px] text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-                  >
-                    <X size={13} />
-                  </button>
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="block text-[11px] font-medium text-[var(--text-faint)]">Acceptance criteria</span>
+            <div className="overflow-hidden rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)]">
+              {ticket.acceptanceCriteria.length > 0 && (
+                <div className="divide-y divide-[var(--border)]">
+                  {ticket.acceptanceCriteria.map((criterion, index) => (
+                    <div
+                      key={`${ticket.id}_criterion_${index}`}
+                      className="grid grid-cols-[20px_minmax(0,1fr)_24px] items-center gap-2 px-3 py-2"
+                    >
+                      <input
+                        aria-label={`Acceptance criterion ${index + 1}`}
+                        type="checkbox"
+                        className="h-3.5 w-3.5 rounded border-[var(--border-strong)] bg-[var(--surface)] accent-[var(--accent)]"
+                      />
+                      <input
+                        value={criterion}
+                        onChange={(event) => updateCriterion(index, event.target.value)}
+                        placeholder="Acceptance criterion"
+                        className="min-w-0 bg-transparent text-[13px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-faint)] focus:text-[var(--text)]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCriterion(index)}
+                        aria-label="Remove criterion"
+                        className="inline-flex h-6 w-6 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addCriterion}
-                className="h-7 rounded-md px-2 text-[12px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
-              >
-                Add criterion
-              </button>
+              )}
+              <div className={cn("px-2 py-1.5", ticket.acceptanceCriteria.length > 0 && "border-t-[0.5px] border-[var(--border)]")}>
+                <button
+                  type="button"
+                  onClick={addCriterion}
+                  className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                >
+                  <Plus size={11} />
+                  Add criterion
+                </button>
+              </div>
             </div>
           </div>
 
@@ -503,90 +509,92 @@ export function TicketDetail({
         </section>
 
         {/* Properties sidebar */}
-        <aside className="space-y-4 p-4">
-          <InlineField label="Status">
-            <div className="flex items-center gap-2">
-              <StatusIcon status={ticket.status} size={14} />
+        <aside className="p-4">
+          <div className="divide-y divide-[var(--border)] overflow-hidden rounded-xl border-[0.5px] border-[var(--border)]">
+            <PropRow label="Status">
+              <div className="flex items-center gap-2">
+                <StatusIcon status={ticket.status} size={13} />
+                <SelectControl
+                  value={ticket.status}
+                  onChange={(value) => onStatusChange(value as Status)}
+                >
+                  {STATUSES.map((status) => {
+                    const disabled =
+                      status !== ticket.status && !canTransition(ticket.status, status)
+                    return (
+                      <option key={status} value={status} disabled={disabled}>
+                        {STATUS_LABELS[status]}
+                      </option>
+                    )
+                  })}
+                </SelectControl>
+              </div>
+            </PropRow>
+
+            <PropRow label="Assignee">
               <SelectControl
-                value={ticket.status}
-                onChange={(value) => onStatusChange(value as Status)}
+                value={ticket.assignee?.id ?? "unassigned"}
+                onChange={(value) =>
+                  onAssigneeChange(users.find((user) => user.id === value) ?? null)
+                }
               >
-                {STATUSES.map((status) => {
-                  const disabled =
-                    status !== ticket.status && !canTransition(ticket.status, status)
-                  return (
-                    <option key={status} value={status} disabled={disabled}>
-                      {STATUS_LABELS[status]}
-                    </option>
-                  )
-                })}
+                <option value="unassigned">Unassigned</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
               </SelectControl>
-            </div>
-          </InlineField>
+            </PropRow>
 
-          <InlineField label="Assignee">
-            <SelectControl
-              value={ticket.assignee?.id ?? "unassigned"}
-              onChange={(value) =>
-                onAssigneeChange(users.find((user) => user.id === value) ?? null)
-              }
-            >
-              <option value="unassigned">Unassigned</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </SelectControl>
-          </InlineField>
+            <PropRow label="Estimate">
+              <input
+                value={ticket.estimate ?? ""}
+                onChange={(event) => onUpdate({ estimate: event.target.value || null })}
+                placeholder="—"
+                className={propertySelectClass}
+              />
+            </PropRow>
 
-          <InlineField label="Estimate">
-            <input
-              value={ticket.estimate ?? ""}
-              onChange={(event) => onUpdate({ estimate: event.target.value || null })}
-              placeholder="No estimate"
-              className={propertySelectClass}
-            />
-          </InlineField>
+            <PropRow label="Due Date">
+              <input
+                type="date"
+                value={ticket.dueDate ?? ""}
+                onChange={(event) => onUpdate({ dueDate: event.target.value || null })}
+                className={propertySelectClass}
+              />
+            </PropRow>
 
-          <InlineField label="Due Date">
-            <input
-              type="date"
-              value={ticket.dueDate ?? ""}
-              onChange={(event) => onUpdate({ dueDate: event.target.value || null })}
-              className={propertySelectClass}
-            />
-          </InlineField>
+            <PropRow label="Blocker">
+              <SelectControl
+                value={ticket.blockerReason ?? ""}
+                onChange={(value) => onUpdate({ blockerReason: value || null })}
+              >
+                <option value="">No blocker</option>
+                {ticket.blockerReason &&
+                !blockerReasons.includes(ticket.blockerReason as (typeof blockerReasons)[number]) ? (
+                  <option value={ticket.blockerReason}>{ticket.blockerReason}</option>
+                ) : null}
+                {blockerReasons.map((reason) => (
+                  <option key={reason} value={reason}>
+                    {reason}
+                  </option>
+                ))}
+              </SelectControl>
+            </PropRow>
 
-          <InlineField label="Blocker Reason">
-            <SelectControl
-              value={ticket.blockerReason ?? ""}
-              onChange={(value) => onUpdate({ blockerReason: value || null })}
-            >
-              <option value="">No blocker</option>
-              {ticket.blockerReason &&
-              !blockerReasons.includes(ticket.blockerReason as (typeof blockerReasons)[number]) ? (
-                <option value={ticket.blockerReason}>{ticket.blockerReason}</option>
-              ) : null}
-              {blockerReasons.map((reason) => (
-                <option key={reason} value={reason}>
-                  {reason}
-                </option>
-              ))}
-            </SelectControl>
-          </InlineField>
+            <PropRow label="Git">
+              {ticket.prNumber ? (
+                <GitPill type="pr" value={ticket.prNumber} />
+              ) : ticket.branch ? (
+                <GitPill type="branch" value={ticket.branch} />
+              ) : (
+                <span className="text-[13px] text-[var(--text-faint)]">—</span>
+              )}
+            </PropRow>
+          </div>
 
-          <InlineField label="Git">
-            {ticket.prNumber ? (
-              <GitPill type="pr" value={ticket.prNumber} />
-            ) : ticket.branch ? (
-              <GitPill type="branch" value={ticket.branch} />
-            ) : (
-              <span className="text-[13px] text-[var(--text-muted)]">No branch</span>
-            )}
-          </InlineField>
-
-          <div className="grid grid-cols-2 gap-3 border-t-[0.5px] border-[var(--border)] pt-3">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <CompactDate label="Created" value={ticket.createdAt} />
             <CompactDate label="Updated" value={ticket.updatedAt} />
           </div>
@@ -825,20 +833,12 @@ function SubtaskSelect({
   )
 }
 
-function Field({ children, label }: { children: React.ReactNode; label: string }) {
-  return (
-    <label className="block space-y-2">
-      <span className="block text-[11px] font-medium text-[var(--text-faint)]">{label}</span>
-      {children}
-    </label>
-  )
-}
 
-function InlineField({ children, label }: { children: React.ReactNode; label: string }) {
+function PropRow({ children, label }: { children: React.ReactNode; label: string }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="block text-[11px] font-medium text-[var(--text-faint)]">{label}</span>
-      {children}
+    <label className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-2 px-3 py-2.5 transition-colors hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,transparent)]">
+      <span className="text-[11px] font-medium text-[var(--text-faint)]">{label}</span>
+      <div className="min-w-0">{children}</div>
     </label>
   )
 }

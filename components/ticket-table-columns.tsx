@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Bug, CheckCircle2, Paperclip, Rocket, Sparkles } from "lucide-react"
+import { Bug, CheckCircle2, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { StatusIcon } from "@/components/status-icon"
 import { Tag } from "@/components/tag"
@@ -9,6 +9,12 @@ import { relTime } from "@/lib/rel-time"
 import { STATUS_LABELS, type Status } from "@/lib/status"
 import { cn } from "@/lib/utils"
 import type { Priority, Ticket, WorkType } from "@/types/ticket"
+
+export type SubtaskContext = {
+  showSubtasks: boolean
+  expandedIds: Set<string>
+  onToggleExpand: (id: string) => void
+}
 
 const priorityLabels: Record<Priority, string> = {
   critical: "Critical",
@@ -121,10 +127,44 @@ export function OwnerCell({ ticket }: { ticket: Ticket }) {
   )
 }
 
-export function TitleCell({ ticket }: { ticket: Ticket }) {
+export function TitleCell({
+  ticket,
+  subtaskCtx
+}: {
+  ticket: Ticket
+  subtaskCtx?: SubtaskContext
+}) {
+  const hasSubtasks = ticket.subtasks.length > 0
+  const isExpanded = subtaskCtx?.expandedIds.has(ticket.id) ?? false
+
   return (
-    <span className="block truncate text-[13px] font-semibold text-[var(--text)]">
-      {ticket.title}
+    <span className="flex min-w-0 items-center gap-1.5">
+      <span className="block truncate text-[13px] font-semibold text-[var(--text)]">
+        {ticket.title}
+      </span>
+      {subtaskCtx?.showSubtasks && hasSubtasks ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            subtaskCtx.onToggleExpand(ticket.id)
+          }}
+          title={isExpanded ? "Collapse subtasks" : `${ticket.subtasks.length} subtask${ticket.subtasks.length === 1 ? "" : "s"}`}
+          className={cn(
+            "inline-flex shrink-0 items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold transition-colors",
+            isExpanded
+              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+          )}
+        >
+          <GitBranch size={9} />
+          {ticket.subtasks.length}
+          <ChevronDown
+            size={9}
+            className={cn("transition-transform", isExpanded && "rotate-180")}
+          />
+        </button>
+      ) : null}
     </span>
   )
 }
@@ -160,7 +200,8 @@ export function formatDueDate(dueDate: string | null) {
 }
 
 export function createTicketColumns(
-  attachmentCounts: Record<string, number> = {}
+  attachmentCounts: Record<string, number> = {},
+  subtaskCtx?: SubtaskContext
 ): ColumnDef<Ticket>[] {
   return [
     {
@@ -187,7 +228,7 @@ export function createTicketColumns(
       id: "title",
       accessorKey: "title",
       header: "Title",
-      cell: ({ row }) => <TitleCell ticket={row.original} />,
+      cell: ({ row }) => <TitleCell ticket={row.original} subtaskCtx={subtaskCtx} />,
       meta: { width: "min-w-0 flex-1" }
     },
     {

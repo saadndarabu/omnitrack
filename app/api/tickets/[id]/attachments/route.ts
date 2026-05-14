@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { dbGetAttachments, dbCreateAttachment } from "@/lib/db/attachments"
+import { dbGetCurrentUser } from "@/lib/db/users"
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -24,8 +25,20 @@ export async function POST(request: Request, { params }: RouteContext) {
     const { id } = await params
     const db     = await createSupabaseServerClient()
     const body   = await request.json()
+    const currentUser = await dbGetCurrentUser(db)
 
-    const required = ["uploadedBy", "fileName", "fileType", "fileSize", "originalFileSize", "compressedFileSize", "compressionRatio", "storagePath"]
+    if (!currentUser) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
+    }
+
+    if (currentUser.role !== "member" && currentUser.role !== "admin") {
+      return NextResponse.json(
+        { error: "You do not have permission to upload screenshots" },
+        { status: 403 }
+      )
+    }
+
+    const required = ["fileName", "fileType", "fileSize", "originalFileSize", "compressedFileSize", "compressionRatio", "storagePath"]
     for (const field of required) {
       if (body[field] === undefined || body[field] === null) {
         return NextResponse.json({ error: `${field} is required` }, { status: 400 })
@@ -34,7 +47,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     const attachment = await dbCreateAttachment(db, {
       ticketId:            id,
-      uploadedBy:          body.uploadedBy,
+      uploadedBy:          currentUser.id,
       fileName:            body.fileName,
       fileType:            body.fileType,
       fileSize:            body.fileSize,

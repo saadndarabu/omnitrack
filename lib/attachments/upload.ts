@@ -12,7 +12,6 @@ export type UploadProgress = "validating" | "compressing" | "uploading" | "savin
 
 export type UploadOptions = {
   ticketId:    string
-  uploadedBy:  string
   file:        File
   onProgress?: (stage: UploadProgress) => void
 }
@@ -27,7 +26,7 @@ export type UploadResult =
   | { ok: false; error: UploadError }
 
 export async function uploadAttachment(opts: UploadOptions): Promise<UploadResult> {
-  const { ticketId, uploadedBy, file, onProgress } = opts
+  const { ticketId, file, onProgress } = opts
 
   // ── 1. Validate ──────────────────────────────────────────────────────────────
   onProgress?.("validating")
@@ -104,7 +103,6 @@ export async function uploadAttachment(opts: UploadOptions): Promise<UploadResul
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      uploadedBy,
       fileName:            safeName,
       fileType:            compressed.mimeType,
       fileSize:            compressed.compressedSize,
