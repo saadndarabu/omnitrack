@@ -754,13 +754,26 @@ export function TicketWorkspace({
       <div className="min-h-screen">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
           <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
-            <div className="min-w-0">
-              <div className="truncate text-[18px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
-                {savedViewDef.id === "all" ? "All tickets" : savedViewDef.label}
-              </div>
-              <div className="hidden truncate text-[12px] text-[var(--text-faint)] sm:block">
-                {`Engineering workspace · ${visibleTickets.length} ticket${visibleTickets.length === 1 ? "" : "s"}`}
-              </div>
+            {/* Saved view tabs as the title */}
+            <div className="flex items-center gap-0.5">
+              {SAVED_VIEWS.map((sv) => {
+                const active = sv.id === savedViewId
+                return (
+                  <button
+                    key={sv.id}
+                    type="button"
+                    onClick={() => setSavedViewId(sv.id)}
+                    className={cn(
+                      "inline-flex items-center rounded-lg px-3 py-1.5 text-[14px] font-semibold transition-colors whitespace-nowrap",
+                      active
+                        ? "bg-[var(--surface-2)] text-[var(--text)]"
+                        : "text-[var(--text-faint)] hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
+                    )}
+                  >
+                    {sv.label}
+                  </button>
+                )
+              })}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <div className="relative hidden sm:flex items-center">
@@ -801,37 +814,7 @@ export function TicketWorkspace({
           </div>
         </header>
 
-        <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
-          <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-3 sm:px-6 lg:px-8">
-            {/* Saved view tabs */}
-            <div className="flex items-end gap-0">
-              {SAVED_VIEWS.map((sv) => {
-                const active = sv.id === savedViewId
-                return (
-                  <button
-                    key={sv.id}
-                    type="button"
-                    onClick={() => setSavedViewId(sv.id)}
-                    className={cn(
-                      "inline-flex items-center border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors whitespace-nowrap",
-                      active
-                        ? "border-[var(--accent)] text-[var(--text)]"
-                        : "border-transparent text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
-                    )}
-                  >
-                    {sv.label}
-                  </button>
-                )
-              })}
-            </div>
-            {/* Display mode toggle */}
-            <div className="shrink-0 py-1.5">
-              <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
-            </div>
-          </div>
-        </div>
-
-        <main className="flex flex-col pt-5">
+        <main className="flex flex-col">
           {viewMode === "table" ? (
             <TicketTable
               tickets={visibleTickets}
@@ -841,17 +824,26 @@ export function TicketWorkspace({
               globalFilter={globalFilter}
               onGlobalFilterChange={setGlobalFilter}
               onOpen={openTicket}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
             />
           ) : (
-            <TicketKanban
-              tickets={visibleTickets}
-              selectedId={selectedId}
-              users={users}
-              globalFilter={globalFilter}
-              onOpen={openTicket}
-              onQuickCreate={quickCreateTicket}
-              onStatusChange={requestKanbanStatusChange}
-            />
+            <>
+              <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+                <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 py-1.5 sm:px-6 lg:px-8">
+                  <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
+                </div>
+              </div>
+              <TicketKanban
+                tickets={visibleTickets}
+                selectedId={selectedId}
+                users={users}
+                globalFilter={globalFilter}
+                onOpen={openTicket}
+                onQuickCreate={quickCreateTicket}
+                onStatusChange={requestKanbanStatusChange}
+              />
+            </>
           )}
         </main>
       </div>

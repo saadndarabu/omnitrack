@@ -51,6 +51,7 @@ import {
   createTicketColumns,
   type SubtaskContext
 } from "@/components/ticket-table-columns"
+import { TicketViewSwitcher, type TicketViewMode } from "@/components/ticket-view-switcher"
 import { STATUS_LABELS, STATUSES, type Status } from "@/lib/status"
 import { cn } from "@/lib/utils"
 import type { Priority, Ticket } from "@/types/ticket"
@@ -77,17 +78,21 @@ export function TicketTable({
   globalFilter = "",
   onGlobalFilterChange,
   onOpen,
+  onViewModeChange,
   selectedId,
   tickets,
-  users
+  users,
+  viewMode = "table"
 }: {
   attachmentCounts?: Record<string, number>
   globalFilter?: string
   onGlobalFilterChange?: (value: string) => void
   onOpen: (ticketId: string) => void
+  onViewModeChange?: (mode: TicketViewMode) => void
   selectedId: string | null
   tickets: Ticket[]
   users: User[]
+  viewMode?: TicketViewMode
 }) {
   const [showSubtasks, setShowSubtasks] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
@@ -214,28 +219,33 @@ export function TicketTable({
   }
 
   return (
-    <div className="mx-auto max-w-[1440px] px-3 sm:px-6 lg:px-8">
-      {/* Toolbar */}
-      <div className="mb-3 flex items-center gap-2">
-        {/* Active filter chips */}
-        {activeFilters.map((filter) => (
-          <span
-            key={filter.key}
-            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
-          >
-            {filter.label}
-            <button
-              type="button"
-              onClick={filter.onClear}
-              aria-label={`Remove ${filter.label} filter`}
-              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
-            >
-              <X size={11} />
-            </button>
-          </span>
-        ))}
+    <div>
+      {/* Subheader: view switcher left, controls right */}
+      <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 sm:px-6 lg:px-8">
+          <div className="py-1.5">
+            <TicketViewSwitcher value={viewMode} onChange={onViewModeChange ?? (() => {})} />
+          </div>
 
-        <div className="ml-auto flex items-center gap-2">
+          {/* Active filter chips */}
+          {activeFilters.map((filter) => (
+            <span
+              key={filter.key}
+              className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 text-[12px] font-medium text-[var(--accent)]"
+            >
+              {filter.label}
+              <button
+                type="button"
+                onClick={filter.onClear}
+                aria-label={`Remove ${filter.label} filter`}
+                className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+
+          <div className="ml-auto flex items-center gap-2">
           {/* Filters */}
         <Popover
           panelClassName="w-[280px] p-3"
@@ -243,7 +253,7 @@ export function TicketTable({
             <button
               type="button"
               className={cn(
-                "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
+                "inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
                 activeFilters.length > 0
                   ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
@@ -365,7 +375,7 @@ export function TicketTable({
           trigger={
             <button
               type="button"
-              className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text-muted)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
             >
               <SlidersHorizontal size={13} />
               Columns
@@ -402,19 +412,21 @@ export function TicketTable({
             if (showSubtasks) setExpandedIds(new Set())
           }}
           className={cn(
-            "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
+            "inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
             showSubtasks
               ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
               : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
           )}
         >
-          <GitBranch size={13} />
+          <GitBranch size={12} />
           Subtasks
         </button>
+          </div>
         </div>
       </div>
 
       {/* Table shell */}
+      <div className="mx-auto max-w-[1440px] px-3 pt-5 sm:px-6 lg:px-8">
       <DndContext id="ticket-table-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleColumnDragEnd}>
         <div
           className="overflow-hidden rounded-[18px] border border-[#E5E1DA] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.04)]"
@@ -533,6 +545,7 @@ export function TicketTable({
           </div>
         </div>
       </DndContext>
+      </div>
     </div>
   )
 }
@@ -606,7 +619,7 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
       scope="col"
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className={cn(
-        "border-b border-[#E5E1DA] bg-[#F3F1EC] px-4 py-3 text-left text-[11px] font-[650] uppercase tracking-[0.06em] text-[#5E6470] last:border-r-0",
+        "border-b border-[#E5E1DA] bg-[#F3F1EC] px-4 py-3 text-left text-[11px] font-[600] tracking-[0.03em] text-[#5E6470] last:border-r-0",
         meta?.width
       )}
     >
