@@ -24,7 +24,7 @@ export default async function TicketDeepLinkPage({
 
   if (!ticket) notFound()
 
-  const attachmentCounts = await dbGetAttachmentCounts(db, tickets.map((t) => t.id))
+  const attachmentCounts = await dbGetAttachmentCounts(db, tickets.map((t) => t.id)).catch(() => ({}))
 
   return (
     <TicketWorkspace

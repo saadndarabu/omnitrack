@@ -10,7 +10,7 @@ import { currentUser } from "@/lib/mock-data"
 export default async function TicketsPage() {
   const db      = await createSupabaseServerClient()
   const [tickets, users] = await Promise.all([dbGetTickets(db), dbGetUsers(db)])
-  const attachmentCounts = await dbGetAttachmentCounts(db, tickets.map((t) => t.id))
+  const attachmentCounts = await dbGetAttachmentCounts(db, tickets.map((t) => t.id)).catch(() => ({}))
 
   return (
     <TicketWorkspace
