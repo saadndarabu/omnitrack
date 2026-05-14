@@ -1,0 +1,12 @@
+{
+  "action": "opened",
+  "pull_request": {
+    "number": 284,
+    "title": "Reconcile webhook references",
+    "body": "Closes SIRP-999 if branch parsing fails.",
+    "merged": false,
+    "head": {
+      "ref": "task/sirp-142-webhook-refs"
+    }
+  }
+}

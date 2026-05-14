@@ -1,0 +1,12 @@
+{
+  "action": "closed",
+  "pull_request": {
+    "number": 279,
+    "title": "Tighten modal escape behavior",
+    "body": "Resolves SIRP-146.",
+    "merged": true,
+    "head": {
+      "ref": "task/modal-escape"
+    }
+  }
+}
