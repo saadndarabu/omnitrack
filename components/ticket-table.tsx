@@ -513,12 +513,12 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
         meta?.width
       )}
     >
-      <span className="flex w-full items-center gap-1">
+      <span className="relative flex w-full items-center">
         <button
           type="button"
           {...attributes}
           {...listeners}
-          className="cursor-grab touch-none text-[var(--text-faint)] opacity-0 transition-opacity hover:text-[var(--text-muted)] group-hover/thead:opacity-100 active:cursor-grabbing"
+          className="absolute -left-3 cursor-grab touch-none text-[var(--text-faint)] opacity-0 transition-opacity hover:text-[var(--text-muted)] group-hover/thead:opacity-100 active:cursor-grabbing"
           aria-label="Drag to reorder column"
         >
           <GripVertical size={12} />
