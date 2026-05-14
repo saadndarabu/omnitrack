@@ -20,6 +20,7 @@ import { StatusIcon } from "@/components/status-icon"
 import { IconButton } from "@/components/ui/button"
 import { canTransition, STATUS_LABELS, STATUSES, type Status } from "@/lib/status"
 import { cn } from "@/lib/utils"
+import { TicketAttachments } from "@/components/ticket-attachments"
 import type { HistoryEntry } from "@/lib/db/tickets"
 import type { Area, Component, Priority, Ticket, WorkType } from "@/types/ticket"
 import type { User } from "@/types/user"
@@ -496,6 +497,9 @@ export function TicketDetail({
               )}
             </div>
           )}
+
+          {/* Screenshots / Attachments */}
+          <TicketAttachments ticketId={ticket.id} currentUser={currentUser} />
         </section>
 
         {/* Properties sidebar */}

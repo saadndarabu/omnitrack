@@ -144,6 +144,29 @@ export interface Database {
         }
         Update: Record<string, never>
       }
+      ticket_attachments: {
+        Row:    TicketAttachmentRow
+        Insert: {
+          id?:                   string
+          ticket_id:             string
+          uploaded_by:           string
+          file_name:             string
+          file_type:             string
+          file_size:             number
+          original_file_size:    number
+          compressed_file_size:  number
+          compression_ratio:     number
+          storage_bucket?:       string
+          storage_path:          string
+          width?:                number | null
+          height?:               number | null
+          deleted_at?:           string | null
+          created_at?:           string
+        }
+        Update: {
+          deleted_at?: string | null
+        }
+      }
       notifications: {
         Row: {
           id:         string
@@ -184,3 +207,23 @@ export interface Database {
 }
 
 export type NotificationTypeDb = "assigned" | "mentioned" | "due_soon" | "comment_added"
+
+// ── ticket_attachments ────────────────────────────────────────────────────────
+
+export interface TicketAttachmentRow {
+  id:                   string
+  ticket_id:            string
+  uploaded_by:          string
+  file_name:            string
+  file_type:            string
+  file_size:            number
+  original_file_size:   number
+  compressed_file_size: number
+  compression_ratio:    number
+  storage_bucket:       string
+  storage_path:         string
+  width:                number | null
+  height:               number | null
+  deleted_at:           string | null
+  created_at:           string
+}

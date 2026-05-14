@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Bug, CheckCircle2, Rocket, Sparkles } from "lucide-react"
+import { Bug, CheckCircle2, Paperclip, Rocket, Sparkles } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { StatusIcon } from "@/components/status-icon"
 import { Tag } from "@/components/tag"
@@ -159,7 +159,9 @@ export function formatDueDate(dueDate: string | null) {
   }).format(new Date(`${dueDate}T00:00:00`))
 }
 
-export function createTicketColumns(): ColumnDef<Ticket>[] {
+export function createTicketColumns(
+  attachmentCounts: Record<string, number> = {}
+): ColumnDef<Ticket>[] {
   return [
     {
       id: "id",
@@ -248,6 +250,27 @@ export function createTicketColumns(): ColumnDef<Ticket>[] {
       meta: { width: "w-[80px]" }
     },
     {
+      id: "attachments",
+      accessorFn: (ticket) => attachmentCounts[ticket.id] ?? 0,
+      header: "",
+      enableSorting: false,
+      enableHiding: false,
+      cell: ({ row }) => {
+        const count = attachmentCounts[row.original.id] ?? 0
+        if (count === 0) return null
+        return (
+          <span
+            title={`${count} screenshot${count === 1 ? "" : "s"}`}
+            className="inline-flex items-center gap-1 text-[11px] text-[var(--text-faint)]"
+          >
+            <Paperclip size={11} />
+            {count}
+          </span>
+        )
+      },
+      meta: { width: "w-[44px]" }
+    },
+    {
       id: "area",
       accessorKey: "area",
       header: "Area",
@@ -306,6 +329,7 @@ export const COLUMN_LABELS: Record<string, string> = {
   priority: "Priority",
   dueDate: "Due Date",
   updatedAt: "Updated",
+  attachments: "Files",
   area: "Area",
   component: "Component",
   estimate: "Estimate",
@@ -322,6 +346,7 @@ export const DEFAULT_VISIBLE_COLUMNS: Record<string, boolean> = {
   priority: true,
   dueDate: true,
   updatedAt: true,
+  attachments: true,
   area: false,
   component: false,
   estimate: false,

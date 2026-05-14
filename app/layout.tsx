@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, JetBrains_Mono } from "next/font/google"
 import { ThemeProvider } from "@/lib/theme"
+import { ToastProvider } from "@/components/toast"
 import "./globals.css"
 
 const geist = Geist({
@@ -38,7 +39,9 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

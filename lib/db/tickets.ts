@@ -16,11 +16,6 @@ type TicketBaseRow = Database["public"]["Tables"]["tickets"]["Row"] & {
   ticket_comments: CommentRow[]
 }
 
-// Top-level rows include inline subtask rows (no recursive nesting).
-type TicketRow = TicketBaseRow & {
-  subtasks: TicketBaseRow[]
-}
-
 // ── Mappers ───────────────────────────────────────────────────
 
 function rowToUser(row: UserRow): User {
@@ -71,24 +66,12 @@ function baseRowToTicket(row: TicketBaseRow, subtasks: Ticket[] = []): Ticket {
   }
 }
 
-function rowToTicket(row: TicketRow): Ticket {
-  const subtasks = (row.subtasks ?? []).map((s) => baseRowToTicket(s))
-  return baseRowToTicket(row, subtasks)
-}
-
-// Subtasks are fetched inline under their parent. The query returns
-// all top-level tickets (parent_id IS NULL) with their subtasks nested.
-const SUBTASK_SELECT = `
-  *,
-  assignee:users!tickets_assignee_id_fkey(*),
-  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*))
-` as const
-
+// Subtasks are fetched in a separate query (avoids PostgREST self-join
+// FK naming issues) and stitched into parents in application code.
 const TICKET_SELECT = `
   *,
   assignee:users!tickets_assignee_id_fkey(*),
-  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*)),
-  subtasks:tickets!tickets_parent_id_fkey(${SUBTASK_SELECT})
+  ticket_comments(*, author:users!ticket_comments_author_id_fkey(*))
 ` as const
 
 // ── Filter / sort params ─────────────────────────────────────
@@ -118,7 +101,7 @@ export async function dbGetTickets(
   db: Db,
   { filters, sort }: TicketListOptions = {}
 ): Promise<Ticket[]> {
-  // Only fetch top-level tickets; subtasks are nested inside them.
+  // Fetch top-level tickets
   let query = db.from("tickets").select(TICKET_SELECT).is("parent_id", null)
 
   if (filters?.status)     query = query.eq("status",    filters.status)
@@ -142,9 +125,33 @@ export async function dbGetTickets(
   const { field = "updated_at", dir = "desc" } = sort ?? {}
   query = query.order(field, { ascending: dir === "asc" })
 
-  const { data, error } = await query
-  if (error) throw error
-  return (data as TicketRow[]).map(rowToTicket)
+  const { data: parentRows, error: parentError } = await query
+  if (parentError) throw parentError
+
+  const parents = parentRows as TicketBaseRow[]
+  if (parents.length === 0) return []
+
+  // Fetch all subtasks for these parents in one query
+  const parentIds = parents.map((r) => r.id)
+  const { data: subtaskRows, error: subtaskError } = await db
+    .from("tickets")
+    .select(TICKET_SELECT)
+    .in("parent_id", parentIds)
+    .order("created_at", { ascending: true })
+
+  if (subtaskError) throw subtaskError
+
+  // Group subtasks by parent_id
+  const subtasksByParent = new Map<string, Ticket[]>()
+  for (const row of (subtaskRows ?? []) as TicketBaseRow[]) {
+    const pid = row.parent_id!
+    if (!subtasksByParent.has(pid)) subtasksByParent.set(pid, [])
+    subtasksByParent.get(pid)!.push(baseRowToTicket(row))
+  }
+
+  return parents.map((row) =>
+    baseRowToTicket(row, subtasksByParent.get(row.id) ?? [])
+  )
 }
 
 export async function dbGetTicketById(db: Db, id: string): Promise<Ticket | null> {
@@ -155,7 +162,24 @@ export async function dbGetTicketById(db: Db, id: string): Promise<Ticket | null
     .maybeSingle()
 
   if (error) throw error
-  return data ? rowToTicket(data as TicketRow) : null
+  if (!data) return null
+
+  const row = data as TicketBaseRow
+
+  // Fetch subtasks for this ticket
+  const { data: subtaskRows, error: subtaskError } = await db
+    .from("tickets")
+    .select(TICKET_SELECT)
+    .eq("parent_id", row.id)
+    .order("created_at", { ascending: true })
+
+  if (subtaskError) throw subtaskError
+
+  const subtasks = (subtaskRows ?? [] as TicketBaseRow[]).map((s) =>
+    baseRowToTicket(s as TicketBaseRow)
+  )
+
+  return baseRowToTicket(row, subtasks)
 }
 
 // ── Create ───────────────────────────────────────────────────
@@ -202,7 +226,7 @@ export async function dbCreateTicket(db: Db, input: CreateTicketInput): Promise<
     .single()
 
   if (error) throw error
-  return rowToTicket(data as TicketRow)
+  return baseRowToTicket(data as TicketBaseRow)
 }
 
 // ── Update ───────────────────────────────────────────────────
@@ -260,7 +284,7 @@ export async function dbUpdateTicket(
     .single()
 
   if (error) throw error
-  return rowToTicket(data as TicketRow)
+  return baseRowToTicket(data as TicketBaseRow)
 }
 
 // ── Delete ───────────────────────────────────────────────────
@@ -285,9 +309,7 @@ export async function dbAddComment(
     .single()
 
   if (error) throw error
-  return rowToComment(
-    data as CommentRow
-  )
+  return rowToComment(data as CommentRow)
 }
 
 export async function dbDeleteComment(db: Db, commentId: string): Promise<void> {

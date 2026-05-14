@@ -68,17 +68,19 @@ const PRIORITY_DOT: Record<Priority, string> = {
 const PAGE_SIZE = 25
 
 export function TicketTable({
+  attachmentCounts = {},
   onOpen,
   selectedId,
   tickets,
   users
 }: {
+  attachmentCounts?: Record<string, number>
   onOpen: (ticketId: string) => void
   selectedId: string | null
   tickets: Ticket[]
   users: User[]
 }) {
-  const columns = useMemo(() => createTicketColumns(), [])
+  const columns = useMemo(() => createTicketColumns(attachmentCounts), [attachmentCounts])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(

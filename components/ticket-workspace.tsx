@@ -49,11 +49,13 @@ function isTypingTarget(target: EventTarget | null) {
 
 export function TicketWorkspace({
   activeTicketId,
+  attachmentCounts = {},
   currentUser,
   initialTickets,
   users
 }: {
   activeTicketId?: string
+  attachmentCounts?: Record<string, number>
   currentUser: User
   initialTickets: Ticket[]
   users: User[]
@@ -737,6 +739,7 @@ export function TicketWorkspace({
               tickets={tickets}
               selectedId={selectedId}
               users={users}
+              attachmentCounts={attachmentCounts}
               onOpen={openTicket}
             />
           ) : (
