@@ -8,8 +8,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 export async function signInWithGoogle() {
   try {
     const headerStore = await headers()
-    const origin =
-      headerStore.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+    const origin = "https://omnitrack-ten.vercel.app"
     const supabase = await createSupabaseServerClient()
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
