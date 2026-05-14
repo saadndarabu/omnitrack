@@ -56,6 +56,7 @@ export interface Database {
           labels:               string[]
           branch:               string | null
           pr_number:            number | null
+          target_repo:          string | null
           assignee_id:          string | null
           parent_id:            string | null
           created_at:           string
@@ -78,6 +79,7 @@ export interface Database {
           labels?:              string[]
           branch?:              string | null
           pr_number?:           number | null
+          target_repo?:         string | null
           assignee_id?:         string | null
           parent_id?:           string | null
           created_at?:          string
@@ -99,6 +101,7 @@ export interface Database {
           labels?:              string[]
           branch?:              string | null
           pr_number?:           number | null
+          target_repo?:         string | null
           assignee_id?:         string | null
           parent_id?:           string | null
           updated_at?:          string
@@ -165,6 +168,50 @@ export interface Database {
         }
         Update: {
           deleted_at?: string | null
+        }
+      }
+      github_user_connections: {
+        Row: {
+          user_id:        string
+          github_login:   string
+          github_user_id: number
+          access_token:   string
+          token_scopes:   string[] | null
+          connected_at:   string
+        }
+        Insert: {
+          user_id:        string
+          github_login:   string
+          github_user_id: number
+          access_token:   string
+          token_scopes?:  string[] | null
+          connected_at?:  string
+        }
+        Update: {
+          github_login?:   string
+          github_user_id?: number
+          access_token?:   string
+          token_scopes?:   string[] | null
+        }
+      }
+      github_repos: {
+        Row: {
+          id:        string
+          full_name: string
+          label:     string | null
+          added_by:  string | null
+          added_at:  string
+        }
+        Insert: {
+          id?:       string
+          full_name: string
+          label?:    string | null
+          added_by?: string | null
+          added_at?: string
+        }
+        Update: {
+          full_name?: string
+          label?:     string | null
         }
       }
       notifications: {

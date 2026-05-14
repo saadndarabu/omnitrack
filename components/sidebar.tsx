@@ -6,6 +6,7 @@ import {
   FolderKanban,
   LayoutDashboard,
   ListTodo,
+  Settings,
   User
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,11 +21,13 @@ const primaryItems = [
 export function Sidebar({
   current = "Tasks",
   expanded,
-  onExpandedChange
+  onExpandedChange,
+  isAdmin = false
 }: {
   current?: string
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
+  isAdmin?: boolean
 }) {
   return (
     <aside
@@ -93,6 +96,23 @@ export function Sidebar({
         </nav>
 
         <div className="mt-auto" />
+
+        {isAdmin && (
+          <a
+            href="/settings/github"
+            title={expanded ? undefined : "Settings"}
+            aria-label="Settings"
+            className={cn(
+              "group mb-2 flex h-[42px] items-center rounded-[14px] text-[13px] font-medium transition-colors duration-[120ms] ease-out text-[var(--text-muted)] hover:bg-[var(--surface-3)] hover:text-[var(--text)]",
+              expanded ? "gap-3 px-2.5" : "justify-center px-0"
+            )}
+          >
+            <span className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors group-hover:text-[var(--text)]">
+              <Settings size={17} strokeWidth={2} />
+            </span>
+            {expanded ? <span className="truncate">Settings</span> : null}
+          </a>
+        )}
 
         <button
           type="button"
