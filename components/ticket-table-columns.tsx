@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Bug, CheckCircle2, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles } from "lucide-react"
+import { Bug, CheckCircle2, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles, TriangleAlert } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { StatusIcon } from "@/components/status-icon"
 import { Tag } from "@/components/tag"
@@ -23,15 +23,27 @@ const priorityLabels: Record<Priority, string> = {
   low: "Low"
 }
 
+// Critical uses --status-blocked (red). High uses a distinct amber token.
+// Medium uses --status-review (purple/violet). Low is muted.
 const priorityPill: Record<Priority, string> = {
   critical:
-    "border-[color-mix(in_srgb,var(--status-blocked)_36%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_12%,transparent)] text-[color-mix(in_srgb,var(--status-blocked)_88%,var(--text))]",
+    "border-[color-mix(in_srgb,var(--status-blocked)_50%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_16%,transparent)] text-[var(--status-blocked)] font-bold",
   high:
-    "border-[color-mix(in_srgb,var(--status-progress)_34%,transparent)] bg-[color-mix(in_srgb,var(--status-progress)_12%,transparent)] text-[color-mix(in_srgb,var(--status-progress)_88%,var(--text))]",
+    "border-[color-mix(in_srgb,var(--status-high)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-high)_12%,transparent)] text-[color-mix(in_srgb,var(--status-high)_90%,var(--text))]",
   medium:
     "border-[color-mix(in_srgb,var(--status-review)_32%,transparent)] bg-[color-mix(in_srgb,var(--status-review)_11%,transparent)] text-[color-mix(in_srgb,var(--status-review)_88%,var(--text))]",
   low:
     "border-[color-mix(in_srgb,var(--text-faint)_30%,transparent)] bg-[color-mix(in_srgb,var(--text-faint)_10%,transparent)] text-[var(--text-muted)]"
+}
+
+// Status chip styles — same shape as priority chip
+const statusChip: Record<Status, string> = {
+  backlog:     "border-[color-mix(in_srgb,var(--text-faint)_30%,transparent)] bg-[color-mix(in_srgb,var(--text-faint)_10%,transparent)] text-[var(--text-faint)]",
+  todo:        "border-[color-mix(in_srgb,var(--status-todo)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-todo)_10%,transparent)] text-[var(--text-muted)]",
+  in_progress: "border-[color-mix(in_srgb,var(--status-progress)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-progress)_12%,transparent)] text-[color-mix(in_srgb,var(--status-progress)_90%,var(--text))]",
+  in_review:   "border-[color-mix(in_srgb,var(--status-review)_36%,transparent)] bg-[color-mix(in_srgb,var(--status-review)_10%,transparent)] text-[color-mix(in_srgb,var(--status-review)_88%,var(--text))]",
+  blocked:     "border-[color-mix(in_srgb,var(--status-blocked)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_12%,transparent)] text-[var(--status-blocked)]",
+  done:        "border-[color-mix(in_srgb,var(--status-done)_36%,transparent)] bg-[color-mix(in_srgb,var(--status-done)_10%,transparent)] text-[color-mix(in_srgb,var(--status-done)_88%,var(--text))]",
 }
 
 const workTypeLabels: Record<WorkType, string> = {
@@ -57,11 +69,40 @@ const statusRank: Record<Status, number> = {
   done: 5
 }
 
+// Stable label → hue mapping: hash label name to one of 8 palette slots
+const LABEL_PALETTE: Array<{ border: string; bg: string; text: string }> = [
+  { border: "color-mix(in_srgb,var(--label-0)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-0)_12%,transparent)", text: "var(--label-0)" },
+  { border: "color-mix(in_srgb,var(--label-1)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-1)_12%,transparent)", text: "var(--label-1)" },
+  { border: "color-mix(in_srgb,var(--label-2)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-2)_12%,transparent)", text: "var(--label-2)" },
+  { border: "color-mix(in_srgb,var(--label-3)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-3)_12%,transparent)", text: "var(--label-3)" },
+  { border: "color-mix(in_srgb,var(--label-4)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-4)_12%,transparent)", text: "var(--label-4)" },
+  { border: "color-mix(in_srgb,var(--label-5)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-5)_12%,transparent)", text: "var(--label-5)" },
+  { border: "color-mix(in_srgb,var(--label-6)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-6)_12%,transparent)", text: "var(--label-6)" },
+  { border: "color-mix(in_srgb,var(--label-7)_40%,transparent)", bg: "color-mix(in_srgb,var(--label-7)_12%,transparent)", text: "var(--label-7)" },
+]
+
+function labelHash(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0
+  }
+  return Math.abs(h) % LABEL_PALETTE.length
+}
+
+function getLabelSlot(label: string) {
+  return LABEL_PALETTE[labelHash(label)]
+}
+
 export function StatusCell({ status }: { status: Status }) {
   return (
-    <span className="inline-flex items-center gap-2 leading-none">
-      <StatusIcon status={status} size={14} />
-      <span className="text-[12px] text-[var(--text-muted)]">{STATUS_LABELS[status]}</span>
+    <span
+      className={cn(
+        "inline-flex h-[22px] items-center gap-1.5 rounded-md border px-2 text-[11px] font-semibold leading-none tracking-wide",
+        statusChip[status]
+      )}
+    >
+      <StatusIcon status={status} size={11} />
+      {STATUS_LABELS[status]}
     </span>
   )
 }
@@ -70,7 +111,7 @@ export function PriorityCell({ priority }: { priority: Priority }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] font-semibold leading-none tracking-wide",
+        "inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] leading-none tracking-wide",
         priorityPill[priority]
       )}
     >
@@ -88,7 +129,7 @@ export function WorkTypeCell({ workType }: { workType: WorkType }) {
         : workType === "enhancement"
           ? Sparkles
           : Rocket
-  const className =
+  const cls =
     workType === "bug"
       ? "text-[var(--status-blocked)]"
       : workType === "task"
@@ -103,7 +144,7 @@ export function WorkTypeCell({ workType }: { workType: WorkType }) {
       aria-label={workTypeLabels[workType]}
       className="inline-flex h-6 w-6 items-center justify-center rounded-md border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_44%,transparent)]"
     >
-      <Icon size={14} className={className} />
+      <Icon size={14} className={cls} />
     </span>
   )
 }
@@ -111,8 +152,9 @@ export function WorkTypeCell({ workType }: { workType: WorkType }) {
 export function OwnerCell({ ticket }: { ticket: Ticket }) {
   if (!ticket.assignee) {
     return (
-      <span className="inline-flex h-[22px] items-center rounded-md border border-dashed border-[var(--border-strong)] px-2 text-[11px] font-medium text-[var(--text-faint)]">
-        Unassigned
+      <span className="flex min-w-0 items-center gap-2">
+        <Avatar user={null} size={22} />
+        <span className="truncate text-[13px] text-[var(--text-faint)]">Unassigned</span>
       </span>
     )
   }
@@ -169,15 +211,31 @@ export function TitleCell({
   )
 }
 
+function ColoredTag({ label }: { label: string }) {
+  const slot = getLabelSlot(label)
+  return (
+    <span
+      style={{
+        borderColor: slot.border,
+        backgroundColor: slot.bg,
+        color: slot.text,
+      }}
+      className="inline-flex h-[20px] items-center rounded border-[0.5px] px-1.5 font-mono text-[10.5px] font-medium tracking-wide"
+    >
+      {label.toLowerCase()}
+    </span>
+  )
+}
+
 export function LabelsCell({ ticket }: { ticket: Ticket }) {
   if (ticket.labels.length === 0) {
     return <span className="text-[12px] text-[var(--text-faint)]">—</span>
   }
 
   return (
-    <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+    <span className="flex min-w-0 items-center gap-1 overflow-hidden">
       {ticket.labels.slice(0, 2).map((label) => (
-        <Tag key={label} value={label} />
+        <ColoredTag key={label} label={label} />
       ))}
       {ticket.labels.length > 2 ? (
         <span className="text-[11px] font-medium text-[var(--text-faint)]">
@@ -188,15 +246,77 @@ export function LabelsCell({ ticket }: { ticket: Ticket }) {
   )
 }
 
-export function formatDueDate(dueDate: string | null) {
-  if (!dueDate) {
-    return "—"
-  }
+export function formatDueDate(dueDate: string | null): string {
+  if (!dueDate) return "—"
+  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${dueDate}T00:00:00`))
+}
 
+function formatAbsDate(iso: string): string {
   return new Intl.DateTimeFormat("en", {
     month: "short",
-    day: "numeric"
-  }).format(new Date(`${dueDate}T00:00:00`))
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${iso}T00:00:00`))
+}
+
+function dueDateDisplay(dueDate: string | null, status: Status): {
+  label: string
+  overdueDays: number
+  tooltip: string
+} {
+  if (!dueDate) return { label: "—", overdueDays: 0, tooltip: "" }
+
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const due = new Date(`${dueDate}T00:00:00`)
+  const diffDays = Math.round((due.getTime() - now.getTime()) / 86400000)
+  const tooltip = formatAbsDate(dueDate)
+
+  if (status === "done") {
+    return { label: diffDays === 0 ? "Today" : diffDays === 1 ? "Tomorrow" : diffDays === -1 ? "Yesterday" : diffDays > 0 ? `in ${diffDays}d` : `${-diffDays}d ago`, overdueDays: 0, tooltip }
+  }
+
+  if (diffDays < 0) {
+    const days = -diffDays
+    return { label: days === 1 ? "1 day overdue" : `${days} days overdue`, overdueDays: days, tooltip: `${tooltip} · ${days} day${days === 1 ? "" : "s"} overdue` }
+  }
+  if (diffDays === 0) return { label: "Today", overdueDays: 0, tooltip }
+  if (diffDays === 1) return { label: "Tomorrow", overdueDays: 0, tooltip }
+  return { label: `in ${diffDays}d`, overdueDays: 0, tooltip }
+}
+
+export function DueDateCell({ ticket }: { ticket: Ticket }) {
+  const { label, overdueDays, tooltip } = dueDateDisplay(ticket.dueDate, ticket.status)
+  const isOverdue = overdueDays > 0
+
+  return (
+    <span
+      title={tooltip || undefined}
+      className={cn(
+        "inline-flex items-center gap-1 text-[12px]",
+        isOverdue ? "font-medium text-[var(--status-blocked)]" : "text-[var(--text-muted)]"
+      )}
+    >
+      {isOverdue ? <TriangleAlert size={11} className="shrink-0" /> : null}
+      {label}
+    </span>
+  )
+}
+
+export function UpdatedCell({ updatedAt }: { updatedAt: string }) {
+  const absDate = new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(updatedAt))
+
+  return (
+    <span title={absDate} className="text-[12px] text-[var(--text-faint)]">
+      {relTime(updatedAt)}
+    </span>
+  )
 }
 
 export function createTicketColumns(
@@ -214,7 +334,7 @@ export function createTicketColumns(
         </span>
       ),
       enableHiding: false,
-      meta: { width: "w-[64px]" }
+      meta: { width: "w-[56px]" }
     },
     {
       id: "workType",
@@ -222,14 +342,14 @@ export function createTicketColumns(
       header: "Type",
       cell: ({ row }) => <WorkTypeCell workType={row.original.workType} />,
       enableHiding: false,
-      meta: { width: "w-[64px]" }
+      meta: { width: "w-[52px]" }
     },
     {
       id: "title",
       accessorKey: "title",
       header: "Title",
       cell: ({ row }) => <TitleCell ticket={row.original} subtaskCtx={subtaskCtx} />,
-      meta: { width: "min-w-0 flex-1" }
+      meta: { width: "min-w-[200px] flex-1" }
     },
     {
       id: "labels",
@@ -237,7 +357,7 @@ export function createTicketColumns(
       header: "Labels",
       enableSorting: false,
       cell: ({ row }) => <LabelsCell ticket={row.original} />,
-      meta: { width: "w-[156px]" }
+      meta: { width: "w-[140px]" }
     },
     {
       id: "status",
@@ -246,14 +366,14 @@ export function createTicketColumns(
       cell: ({ row }) => <StatusCell status={row.original.status} />,
       sortingFn: (a, b) =>
         statusRank[a.original.status] - statusRank[b.original.status],
-      meta: { width: "w-[132px]" }
+      meta: { width: "w-[120px]" }
     },
     {
       id: "owner",
       accessorFn: (ticket) => ticket.assignee?.name ?? "Unassigned",
       header: "Owner",
       cell: ({ row }) => <OwnerCell ticket={row.original} />,
-      meta: { width: "w-[164px]" }
+      meta: { width: "w-[148px]" }
     },
     {
       id: "priority",
@@ -262,33 +382,25 @@ export function createTicketColumns(
       cell: ({ row }) => <PriorityCell priority={row.original.priority} />,
       sortingFn: (a, b) =>
         priorityRank[a.original.priority] - priorityRank[b.original.priority],
-      meta: { width: "w-[108px]" }
+      meta: { width: "w-[92px]" }
     },
     {
       id: "dueDate",
       accessorKey: "dueDate",
-      header: "Due Date",
-      cell: ({ row }) => (
-        <span className="text-[12px] text-[var(--text-muted)]">
-          {formatDueDate(row.original.dueDate)}
-        </span>
-      ),
+      header: "Due",
+      cell: ({ row }) => <DueDateCell ticket={row.original} />,
       sortingFn: (a, b) =>
         (a.original.dueDate ?? "9999-12-31").localeCompare(
           b.original.dueDate ?? "9999-12-31"
         ),
-      meta: { width: "w-[112px]" }
+      meta: { width: "w-[100px]" }
     },
     {
       id: "updatedAt",
       accessorKey: "updatedAt",
       header: "Updated",
-      cell: ({ row }) => (
-        <span className="text-[12px] text-[var(--text-faint)]">
-          {relTime(row.original.updatedAt)}
-        </span>
-      ),
-      meta: { width: "w-[80px]" }
+      cell: ({ row }) => <UpdatedCell updatedAt={row.original.updatedAt} />,
+      meta: { width: "w-[72px]" }
     },
     {
       id: "attachments",
@@ -309,7 +421,7 @@ export function createTicketColumns(
           </span>
         )
       },
-      meta: { width: "w-[44px]" }
+      meta: { width: "w-[40px]" }
     },
     {
       id: "area",
@@ -320,7 +432,7 @@ export function createTicketColumns(
           {row.original.area}
         </span>
       ),
-      meta: { width: "w-[120px]" }
+      meta: { width: "w-[110px]" }
     },
     {
       id: "component",
@@ -331,7 +443,7 @@ export function createTicketColumns(
           {row.original.component}
         </span>
       ),
-      meta: { width: "w-[128px]" }
+      meta: { width: "w-[120px]" }
     },
     {
       id: "estimate",
@@ -343,7 +455,7 @@ export function createTicketColumns(
           {row.original.estimate ?? <span className="text-[var(--text-faint)]">—</span>}
         </span>
       ),
-      meta: { width: "w-[92px]" }
+      meta: { width: "w-[88px]" }
     },
     {
       id: "description",
@@ -351,11 +463,11 @@ export function createTicketColumns(
       header: "Description",
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="block max-w-[320px] truncate text-[12px] text-[var(--text-muted)]">
+        <span className="block max-w-[300px] truncate text-[12px] text-[var(--text-muted)]">
           {row.original.description}
         </span>
       ),
-      meta: { width: "w-[320px]" }
+      meta: { width: "w-[300px]" }
     }
   ]
 }
@@ -368,7 +480,7 @@ export const COLUMN_LABELS: Record<string, string> = {
   workType: "Type",
   owner: "Owner",
   priority: "Priority",
-  dueDate: "Due Date",
+  dueDate: "Due",
   updatedAt: "Updated",
   attachments: "Files",
   area: "Area",

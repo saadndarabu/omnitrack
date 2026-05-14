@@ -404,35 +404,54 @@ export function TicketTable({
           )}
         </Popover>
 
-        {/* Subtasks toggle */}
+        {/* Subtasks inline-expand toggle */}
         <button
           type="button"
+          role="switch"
+          aria-checked={showSubtasks}
           onClick={() => {
             setShowSubtasks((v) => !v)
             if (showSubtasks) setExpandedIds(new Set())
           }}
           className={cn(
-            "inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
+            "inline-flex h-[30px] items-center gap-2 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
             showSubtasks
               ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
               : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
           )}
         >
           <GitBranch size={12} />
-          Subtasks
+          Show subtasks
+          {/* pill toggle track */}
+          <span
+            aria-hidden
+            className={cn(
+              "relative inline-flex h-[14px] w-[24px] shrink-0 items-center rounded-full border transition-colors",
+              showSubtasks
+                ? "border-[var(--accent)] bg-[var(--accent)]"
+                : "border-[var(--border-strong)] bg-[var(--surface-3)]"
+            )}
+          >
+            <span
+              className={cn(
+                "absolute h-[10px] w-[10px] rounded-full bg-[var(--surface)] shadow-sm transition-transform",
+                showSubtasks ? "translate-x-[12px]" : "translate-x-[1px]"
+              )}
+            />
+          </span>
         </button>
           </div>
         </div>
       </div>
 
       {/* Table shell */}
-      <div className="mx-auto max-w-[1440px] px-3 pt-5 sm:px-6 lg:px-8">
+      <div className="px-3 pt-5 sm:px-6 lg:px-8">
       <DndContext id="ticket-table-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleColumnDragEnd}>
         <div
-          className="overflow-hidden rounded-[18px] border border-[#E5E1DA] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.04)]"
+          className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.04)]"
         >
           <div className="max-h-[calc(100vh-220px)] overflow-auto">
-            <table className="min-w-full border-separate border-spacing-0">
+            <table className="w-full border-separate border-spacing-0">
               <thead className="group/thead sticky top-0 z-[1]">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <SortableContext key={headerGroup.id} items={columnIds} strategy={horizontalListSortingStrategy}>
@@ -470,15 +489,15 @@ export function TicketTable({
                             ? "bg-[var(--accent-soft)] shadow-[inset_3px_0_0_var(--accent)]"
                             : isSelected
                               ? "bg-[var(--accent-soft)]"
-                              : "hover:bg-[#FAF9F6]"
+                              : "hover:bg-[var(--surface-2)]"
                         )}
                       >
                         {row.getVisibleCells().map((cell, cellIndex) => (
                           <td
                             key={cell.id}
                             className={cn(
-                              "h-[58px] border-b border-[#EEEAE3] px-4 align-middle text-[13px] text-[var(--text-muted)] last:border-r-0",
-                              cellIndex === 2 ? "border-r border-[#EEEAE3]" : ""
+                              "h-[58px] border-b border-[var(--border)] px-4 align-middle text-[13px] text-[var(--text-muted)] last:border-r-0",
+                              cellIndex === 2 ? "border-r border-[var(--border)]" : ""
                             )}
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -510,7 +529,7 @@ export function TicketTable({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-2 border-t border-[#EEEAE3] bg-[#FAFAF8] px-4 py-2.5 text-[11px] text-[var(--text-faint)]">
+          <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-[11px] text-[var(--text-faint)]">
             <span>
               {totalFiltered === 0
                 ? "0 tickets"
@@ -519,29 +538,31 @@ export function TicketTable({
                 <span className="ml-2 text-[var(--text-muted)]">· {selectedCount} selected</span>
               ) : null}
             </span>
-            <span className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                aria-label="Previous page"
-                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <span className="px-1 tabular-nums">
-                {table.getPageCount() === 0 ? 1 : pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
+            {table.getPageCount() > 1 ? (
+              <span className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  aria-label="Previous page"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="px-1 tabular-nums">
+                  {pageIndex + 1} / {table.getPageCount()}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  aria-label="Next page"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
+                >
+                  <ChevronRight size={14} />
+                </button>
               </span>
-              <button
-                type="button"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-                aria-label="Next page"
-                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)] disabled:pointer-events-none disabled:opacity-40"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </span>
+            ) : null}
           </div>
         </div>
       </DndContext>
@@ -565,7 +586,7 @@ function SubtaskTableRow({
     <tr
       onClick={() => onOpen(subtask.id)}
       data-ticket-id={subtask.id}
-      className="group cursor-pointer bg-[#FAFAF8] transition-colors duration-[120ms] ease-out hover:bg-[#F5F3EE]"
+      className="group cursor-pointer bg-[var(--surface-2)] transition-colors duration-[120ms] ease-out hover:bg-[var(--surface-3)]"
     >
       {visibleColumns.map((col, cellIndex) => {
         const isTitle = col.id === "title"
@@ -575,8 +596,8 @@ function SubtaskTableRow({
             key={col.id}
             className={cn(
               "align-middle px-4 text-[12px] text-[var(--text-muted)]",
-              isLast ? "border-b-2 border-[#E0DDD5]" : "border-b border-[#EEEAE3]",
-              isBorderRight ? "border-r border-[#EEEAE3]" : "",
+              isLast ? "border-b-2 border-[var(--border-strong)]" : "border-b border-[var(--border)]",
+              isBorderRight ? "border-r border-[var(--border)]" : "",
               isTitle ? "h-[48px]" : "h-[48px]"
             )}
           >
@@ -619,7 +640,7 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
       scope="col"
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className={cn(
-        "border-b border-[#E5E1DA] bg-[#F3F1EC] px-4 py-3 text-left text-[11px] font-[600] tracking-[0.03em] text-[#5E6470] last:border-r-0",
+        "border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-left text-[11px] font-[600] tracking-[0.03em] text-[var(--text-faint)] last:border-r-0",
         meta?.width
       )}
     >

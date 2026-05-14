@@ -51,7 +51,7 @@ type SavedView = {
 const SAVED_VIEWS: SavedView[] = [
   { id: "all", label: "All tickets", filter: () => true },
   { id: "my", label: "My tickets", filter: (t, uid) => t.assignee?.id === uid },
-  { id: "team-active", label: "Team active", filter: (t) => t.status === "in_progress" || t.status === "in_review" },
+  { id: "team-active", label: "Active", filter: (t) => t.status === "in_progress" || t.status === "in_review" },
 ]
 
 function sortMyTickets(tickets: Ticket[]): Ticket[] {
@@ -807,6 +807,11 @@ export function TicketWorkspace({
         </header>
 
         <main className="flex flex-col">
+          <div className="mx-auto w-full max-w-[1440px] px-3 pb-1 pt-5 sm:px-6 lg:px-8">
+            <h1 className="text-[22px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
+              Tickets
+            </h1>
+          </div>
           {viewMode === "table" ? (
             <TicketTable
               tickets={visibleTickets}

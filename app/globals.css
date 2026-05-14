@@ -18,9 +18,19 @@
   --accent-strong: #5538E0;
   --status-todo: #9CA3AF;
   --status-progress: #B45309;
+  --status-high: #C2610A;
   --status-review: #6D28D9;
   --status-done: #16803C;
   --status-blocked: #BE123C;
+  /* Label palette — 8 stable hues for hash-based coloring */
+  --label-0: #6D4AFF;
+  --label-1: #0284C7;
+  --label-2: #059669;
+  --label-3: #D97706;
+  --label-4: #DB2777;
+  --label-5: #7C3AED;
+  --label-6: #0891B2;
+  --label-7: #65A30D;
 }
 
 html.dark {
@@ -39,9 +49,19 @@ html.dark {
   --accent-strong: #7c3aed;
   --status-todo: #849495;
   --status-progress: #e8c423;
+  --status-high: #f59e0b;
   --status-review: #d3bbff;
   --status-done: #63D68A;
   --status-blocked: #F06F82;
+  /* Label palette — dark theme variants */
+  --label-0: #8b5cf6;
+  --label-1: #38bdf8;
+  --label-2: #34d399;
+  --label-3: #fbbf24;
+  --label-4: #f472b6;
+  --label-5: #a78bfa;
+  --label-6: #22d3ee;
+  --label-7: #a3e635;
 }
 
 * {
