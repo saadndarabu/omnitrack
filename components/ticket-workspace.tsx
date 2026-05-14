@@ -40,6 +40,20 @@ const shortcutRows = [
 
 const PRIORITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
 
+type SavedViewId = "all" | "my" | "team-active"
+
+type SavedView = {
+  id: SavedViewId
+  label: string
+  filter: (ticket: Ticket, currentUserId: string) => boolean
+}
+
+const SAVED_VIEWS: SavedView[] = [
+  { id: "all", label: "All tickets", filter: () => true },
+  { id: "my", label: "My tickets", filter: (t, uid) => t.assignee?.id === uid },
+  { id: "team-active", label: "Team active", filter: (t) => t.status === "in_progress" || t.status === "in_review" },
+]
+
 function sortMyTickets(tickets: Ticket[]): Ticket[] {
   return [...tickets].sort((a, b) => {
     // 1. Blocked first
@@ -94,11 +108,16 @@ export function TicketWorkspace({
   const [modalStack, setModalStack] = useState<string[]>(activeTicketId ? [activeTicketId] : [])
   const [editingTitleTicketId, setEditingTitleTicketId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<TicketViewMode>("table")
+  const [savedViewId, setSavedViewId] = useState<SavedViewId>(view === "my" ? "my" : "all")
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [globalFilter, setGlobalFilter] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
 
-  const visibleTickets = tickets
+  const savedViewDef = SAVED_VIEWS.find((v) => v.id === savedViewId) ?? SAVED_VIEWS[0]
+  const visibleTickets = useMemo(
+    () => tickets.filter((t) => savedViewDef.filter(t, currentUser.id)),
+    [tickets, savedViewDef, currentUser.id]
+  )
 
   const visibleTicketIds = useMemo(
     () => visibleTickets.map((ticket) => ticket.id),
@@ -737,12 +756,10 @@ export function TicketWorkspace({
           <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
             <div className="min-w-0">
               <div className="truncate text-[18px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
-                {view === "my" ? "My tickets" : "All tickets"}
+                {savedViewDef.id === "all" ? "All tickets" : savedViewDef.label}
               </div>
               <div className="hidden truncate text-[12px] text-[var(--text-faint)] sm:block">
-                {view === "my"
-                  ? `Assigned to you · ${tickets.length} open`
-                  : `Engineering workspace · ${tickets.length} tickets`}
+                {`Engineering workspace · ${visibleTickets.length} ticket${visibleTickets.length === 1 ? "" : "s"}`}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -784,14 +801,40 @@ export function TicketWorkspace({
           </div>
         </header>
 
-        <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)]">
-          <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
+        <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+          <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-4 px-3 sm:px-6 lg:px-8">
+            {/* Saved view tabs */}
+            <div className="flex items-end gap-0">
+              {SAVED_VIEWS.map((sv) => {
+                const active = sv.id === savedViewId
+                return (
+                  <button
+                    key={sv.id}
+                    type="button"
+                    onClick={() => setSavedViewId(sv.id)}
+                    className={cn(
+                      "inline-flex items-center border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors whitespace-nowrap",
+                      active
+                        ? "border-[var(--accent)] text-[var(--text)]"
+                        : "border-transparent text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+                    )}
+                  >
+                    {sv.label}
+                  </button>
+                )
+              })}
+            </div>
+            {/* Display mode toggle */}
+            <div className="shrink-0 py-1.5">
+              <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
+            </div>
+          </div>
         </div>
 
         <main className="flex flex-col pt-5">
           {viewMode === "table" ? (
             <TicketTable
-              tickets={tickets}
+              tickets={visibleTickets}
               selectedId={selectedId}
               users={users}
               attachmentCounts={attachmentCounts}
@@ -799,25 +842,15 @@ export function TicketWorkspace({
               onGlobalFilterChange={setGlobalFilter}
               onOpen={openTicket}
             />
-          ) : viewMode === "kanban" ? (
+          ) : (
             <TicketKanban
-              tickets={tickets}
+              tickets={visibleTickets}
               selectedId={selectedId}
               users={users}
               globalFilter={globalFilter}
               onOpen={openTicket}
               onQuickCreate={quickCreateTicket}
               onStatusChange={requestKanbanStatusChange}
-            />
-          ) : (
-            <TicketTable
-              tickets={tickets}
-              selectedId={selectedId}
-              users={users}
-              attachmentCounts={attachmentCounts}
-              globalFilter={globalFilter}
-              onGlobalFilterChange={setGlobalFilter}
-              onOpen={openTicket}
             />
           )}
         </main>

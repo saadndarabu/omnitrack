@@ -1,14 +1,13 @@
 "use client"
 
-import { Columns3, List, Table2 } from "lucide-react"
+import { Columns3, Table2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type TicketViewMode = "table" | "kanban" | "list"
+export type TicketViewMode = "table" | "kanban"
 
 const VIEWS: { id: TicketViewMode; label: string; icon: typeof Table2 }[] = [
   { id: "table", label: "Table", icon: Table2 },
   { id: "kanban", label: "Board", icon: Columns3 },
-  { id: "list", label: "List", icon: List },
 ]
 
 export function TicketViewSwitcher({
@@ -19,7 +18,8 @@ export function TicketViewSwitcher({
   onChange: (value: TicketViewMode) => void
 }) {
   return (
-    <div className="flex items-end gap-0.5 px-3 sm:px-6 lg:px-8 mx-auto w-full max-w-[1440px]">
+    <div className="flex items-center gap-0.5">
+      <span className="mr-1.5 text-[11px] font-medium text-[var(--text-faint)]">View as</span>
       {VIEWS.map((view) => {
         const Icon = view.icon
         const active = value === view.id
@@ -29,18 +29,17 @@ export function TicketViewSwitcher({
             type="button"
             onClick={() => onChange(view.id)}
             className={cn(
-              "inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-[13px] font-medium transition-colors",
+              "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition-colors",
               active
-                ? "border-[var(--accent)] text-[var(--accent)]"
-                : "border-transparent text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+                ? "bg-[var(--surface-2)] text-[var(--text)] shadow-[inset_0_0_0_0.5px_var(--border-strong)]"
+                : "text-[var(--text-faint)] hover:text-[var(--text-muted)]"
             )}
           >
-            <Icon size={13} />
+            <Icon size={12} />
             {view.label}
           </button>
         )
       })}
-      <div className="flex-1 border-b-2 border-[var(--border)]" />
     </div>
   )
 }
