@@ -754,26 +754,18 @@ export function TicketWorkspace({
       <div className="min-h-screen">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
           <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
-            {/* Saved view tabs as the title */}
+            {/* Saved view filters */}
             <div className="flex items-center gap-0.5">
-              {SAVED_VIEWS.map((sv) => {
-                const active = sv.id === savedViewId
-                return (
-                  <button
-                    key={sv.id}
-                    type="button"
-                    onClick={() => setSavedViewId(sv.id)}
-                    className={cn(
-                      "inline-flex items-center rounded-lg px-3 py-1.5 text-[14px] font-semibold transition-colors whitespace-nowrap",
-                      active
-                        ? "bg-[var(--surface-2)] text-[var(--text)]"
-                        : "text-[var(--text-faint)] hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
-                    )}
-                  >
-                    {sv.label}
-                  </button>
-                )
-              })}
+              {SAVED_VIEWS.map((sv) => (
+                <button
+                  key={sv.id}
+                  type="button"
+                  onClick={() => setSavedViewId(sv.id)}
+                  className="inline-flex items-center rounded-lg px-3 py-1.5 text-[14px] font-semibold text-[var(--text-faint)] transition-colors whitespace-nowrap hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
+                >
+                  {sv.label}
+                </button>
+              ))}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <div className="relative hidden sm:flex items-center">
