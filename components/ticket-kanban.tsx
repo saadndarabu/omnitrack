@@ -29,9 +29,10 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { AlertOctagon, CalendarDays, Loader2, Search, SquareDashed, X } from "lucide-react"
+import { AlertOctagon, CalendarDays, Check, Loader2, SlidersHorizontal, SquareDashed, X } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { StatusIcon } from "@/components/status-icon"
+import { Popover } from "@/components/ui/popover"
 import {
   PriorityCell,
   WorkTypeCell,
@@ -41,6 +42,15 @@ import { canTransition, STATUS_LABELS, STATUSES, type Status } from "@/lib/statu
 import { cn } from "@/lib/utils"
 import type { Priority, Ticket, WorkType } from "@/types/ticket"
 import type { User } from "@/types/user"
+
+const PRIORITIES: Priority[] = ["critical", "high", "medium", "low"]
+const PRIORITY_LABELS: Record<Priority, string> = { critical: "Critical", high: "High", medium: "Medium", low: "Low" }
+const PRIORITY_DOT: Record<Priority, string> = {
+  critical: "bg-[var(--status-blocked)]",
+  high: "bg-[var(--status-progress)]",
+  medium: "bg-[var(--status-review)]",
+  low: "bg-[var(--text-faint)]"
+}
 
 type BoardColumns = Record<Status, Ticket[]>
 
@@ -68,6 +78,7 @@ function findContainer(columns: BoardColumns, id: string): Status | null {
 }
 
 export function TicketKanban({
+  globalFilter = "",
   onOpen,
   onQuickCreate,
   onStatusChange,
@@ -75,6 +86,7 @@ export function TicketKanban({
   tickets,
   users
 }: {
+  globalFilter?: string
   onOpen: (ticketId: string) => void
   onQuickCreate: (input: {
     assignee: User | null
@@ -88,7 +100,10 @@ export function TicketKanban({
   tickets: Ticket[]
   users: User[]
 }) {
-  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState<Status | null>(null)
+  const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null)
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null)
+  const [visibleStatuses, setVisibleStatuses] = useState<Set<Status>>(new Set(STATUSES))
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null)
   const [savingTicketIds, setSavingTicketIds] = useState<Record<string, boolean>>({})
   const suppressOpenUntilRef = useRef(0)
@@ -102,28 +117,31 @@ export function TicketKanban({
   )
 
   const filteredTickets = useMemo(() => {
-    const needle = search.trim().toLowerCase()
-    if (!needle) {
-      return tickets
-    }
-
-    return tickets.filter((ticket) =>
-      [
-        ticket.id,
-        ticket.title,
-        ticket.description,
-        ticket.workType,
-        ticket.priority,
-        ticket.assignee?.name ?? "Unassigned",
-        ticket.area,
-        ticket.component,
-        ...ticket.labels
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(needle)
-    )
-  }, [search, tickets])
+    return tickets.filter((ticket) => {
+      if (statusFilter && ticket.status !== statusFilter) return false
+      if (priorityFilter && ticket.priority !== priorityFilter) return false
+      if (ownerFilter) {
+        const name = ticket.assignee?.name ?? "Unassigned"
+        if (name !== ownerFilter) return false
+      }
+      if (globalFilter) {
+        const needle = globalFilter.trim().toLowerCase()
+        const match = [
+          ticket.id,
+          ticket.title,
+          ticket.description,
+          ticket.workType,
+          ticket.priority,
+          ticket.assignee?.name ?? "Unassigned",
+          ticket.area,
+          ticket.component,
+          ...ticket.labels
+        ].join(" ").toLowerCase().includes(needle)
+        if (!match) return false
+      }
+      return true
+    })
+  }, [globalFilter, statusFilter, priorityFilter, ownerFilter, tickets])
 
   const ticketsByStatus = useMemo(
     () => groupTicketsByStatus(filteredTickets),
@@ -294,33 +312,158 @@ export function TicketKanban({
     onOpen(ticketId)
   }
 
+  const activeFilters: Array<{ key: string; label: string; onClear: () => void }> = []
+  if (statusFilter) activeFilters.push({ key: "status", label: `Status: ${STATUS_LABELS[statusFilter]}`, onClear: () => setStatusFilter(null) })
+  if (priorityFilter) activeFilters.push({ key: "priority", label: `Priority: ${PRIORITY_LABELS[priorityFilter]}`, onClear: () => setPriorityFilter(null) })
+  if (ownerFilter) activeFilters.push({ key: "owner", label: `Owner: ${ownerFilter}`, onClear: () => setOwnerFilter(null) })
+
   return (
     <div>
+      {/* Toolbar */}
       <div className="mx-auto mb-3 flex max-w-[1440px] items-center gap-2 px-3 sm:px-6 lg:px-8">
-        <div className="relative flex h-[40px] min-w-0 max-w-[280px] flex-1 items-center">
-          <Search
-            size={14}
-            className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search board…"
-            aria-label="Search board"
-            className="h-[40px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none"
-          />
-          {search ? (
+        {/* Filters */}
+        <Popover
+          panelClassName="w-[280px] p-3"
+          trigger={
             <button
               type="button"
-              onClick={() => setSearch("")}
-              aria-label="Clear search"
-              className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded-md text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+              className={cn(
+                "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
+                activeFilters.length > 0
+                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                  : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              )}
             >
-              <X size={12} />
+              <SlidersHorizontal size={13} />
+              Filters
+              {activeFilters.length > 0 && (
+                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-[var(--accent)] px-1 text-[10px] font-semibold text-white">
+                  {activeFilters.length}
+                </span>
+              )}
             </button>
-          ) : null}
-        </div>
+          }
+        >
+          {(close) => (
+            <div className="flex flex-col gap-4">
+              {/* Status */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Status</span>
+                  {statusFilter && (
+                    <button type="button" onClick={() => setStatusFilter(null)} className="text-[11px] text-[var(--text-faint)] transition-colors hover:text-[var(--text)]">Clear</button>
+                  )}
+                </div>
+                <KanbanFilterList
+                  items={STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s], leading: <StatusIcon status={s} size={14} /> }))}
+                  value={statusFilter}
+                  onSelect={(v) => setStatusFilter(v === statusFilter ? null : v as Status)}
+                />
+              </div>
+              {/* Priority */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Priority</span>
+                  {priorityFilter && (
+                    <button type="button" onClick={() => setPriorityFilter(null)} className="text-[11px] text-[var(--text-faint)] transition-colors hover:text-[var(--text)]">Clear</button>
+                  )}
+                </div>
+                <KanbanFilterList
+                  items={PRIORITIES.map((p) => ({ value: p, label: PRIORITY_LABELS[p], leading: <span className={cn("h-1.5 w-1.5 rounded-full", PRIORITY_DOT[p])} /> }))}
+                  value={priorityFilter}
+                  onSelect={(v) => setPriorityFilter(v === priorityFilter ? null : v as Priority)}
+                />
+              </div>
+              {/* Owner */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-[650] uppercase tracking-[0.06em] text-[var(--text-faint)]">Owner</span>
+                  {ownerFilter && (
+                    <button type="button" onClick={() => setOwnerFilter(null)} className="text-[11px] text-[var(--text-faint)] transition-colors hover:text-[var(--text)]">Clear</button>
+                  )}
+                </div>
+                <KanbanFilterList
+                  items={[
+                    { value: "Unassigned", label: "Unassigned" },
+                    ...users.map((u) => ({ value: u.name, label: u.name }))
+                  ]}
+                  value={ownerFilter}
+                  onSelect={(v) => setOwnerFilter(v === ownerFilter ? null : v)}
+                />
+              </div>
+              {activeFilters.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { setStatusFilter(null); setPriorityFilter(null); setOwnerFilter(null); close() }}
+                  className="mt-1 w-full rounded-xl border border-[var(--border)] py-1.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          )}
+        </Popover>
+
+        {/* Columns (visible status lanes) */}
+        <Popover
+          align="end"
+          panelClassName="w-[200px] p-1"
+          trigger={
+            <button
+              type="button"
+              className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text-muted)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+            >
+              <SlidersHorizontal size={13} />
+              Columns
+              <span className="text-[11px] text-[var(--text-faint)]">{visibleStatuses.size}</span>
+            </button>
+          }
+        >
+          {() => (
+            <div className="max-h-[320px] overflow-y-auto">
+              {STATUSES.map((status) => {
+                const visible = visibleStatuses.has(status)
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setVisibleStatuses((prev) => {
+                      const next = new Set(prev)
+                      if (next.has(status)) next.delete(status)
+                      else next.add(status)
+                      return next
+                    })}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <StatusIcon status={status} size={13} />
+                      {STATUS_LABELS[status]}
+                    </span>
+                    {visible && <Check size={13} className="text-[var(--accent)]" />}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </Popover>
+
+        {/* Active filter chips */}
+        {activeFilters.map((f) => (
+          <span
+            key={f.key}
+            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
+          >
+            {f.label}
+            <button
+              type="button"
+              onClick={f.onClear}
+              aria-label={`Remove ${f.label} filter`}
+              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+            >
+              <X size={11} />
+            </button>
+          </span>
+        ))}
       </div>
 
       <DndContext
@@ -333,7 +476,7 @@ export function TicketKanban({
         onDragCancel={handleDragCancel}
       >
         <div className="flex max-h-[calc(100vh-196px)] gap-3 overflow-x-auto px-3 py-2 sm:px-6 lg:px-8">
-          {STATUSES.map((status) => (
+          {STATUSES.filter((s) => visibleStatuses.has(s)).map((status) => (
             <KanbanColumn
               key={status}
               status={status}
@@ -722,6 +865,39 @@ function QuickSelect({
     >
       {children}
     </select>
+  )
+}
+
+function KanbanFilterList({
+  items,
+  value,
+  onSelect
+}: {
+  items: Array<{ value: string; label: string; leading?: React.ReactNode }>
+  value: string | null
+  onSelect: (value: string) => void
+}) {
+  return (
+    <div className="max-h-[280px] overflow-y-auto">
+      {items.map((item) => {
+        const active = value === item.value
+        return (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => onSelect(item.value)}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors",
+              active ? "bg-[var(--surface-2)] text-[var(--text)]" : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+            )}
+          >
+            {item.leading && <span className="shrink-0">{item.leading}</span>}
+            <span className="flex-1 truncate">{item.label}</span>
+            {active && <Check size={13} className="text-[var(--accent)]" />}
+          </button>
+        )
+      })}
+    </div>
   )
 }
 

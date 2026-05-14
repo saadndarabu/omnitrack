@@ -5,13 +5,15 @@ import {
   ChevronRight,
   FolderKanban,
   LayoutDashboard,
-  ListTodo
+  ListTodo,
+  User
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const primaryItems = [
   { label: "Dashboard", Icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Tasks", Icon: ListTodo, href: "/tickets" },
+  { label: "My Tickets", Icon: User, href: "/my" },
+  { label: "All Tickets", Icon: ListTodo, href: "/tickets" },
   { label: "Projects", Icon: FolderKanban, href: "#" }
 ]
 

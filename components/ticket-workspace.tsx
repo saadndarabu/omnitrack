@@ -38,6 +38,27 @@ const shortcutRows = [
   ["e", "Edit title"]
 ] as const
 
+const PRIORITY_RANK: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 }
+
+function sortMyTickets(tickets: Ticket[]): Ticket[] {
+  return [...tickets].sort((a, b) => {
+    // 1. Blocked first
+    const aBlocked = a.status === "blocked" ? 0 : 1
+    const bBlocked = b.status === "blocked" ? 0 : 1
+    if (aBlocked !== bBlocked) return aBlocked - bBlocked
+    // 2. Due date ascending (no due date goes last)
+    const aDue = a.dueDate ?? "9999-12-31"
+    const bDue = b.dueDate ?? "9999-12-31"
+    if (aDue !== bDue) return aDue < bDue ? -1 : 1
+    // 3. Priority
+    const aPri = PRIORITY_RANK[a.priority] ?? 99
+    const bPri = PRIORITY_RANK[b.priority] ?? 99
+    if (aPri !== bPri) return aPri - bPri
+    // 4. Most recently updated
+    return b.updatedAt.localeCompare(a.updatedAt)
+  })
+}
+
 function isTypingTarget(target: EventTarget | null) {
   return (
     target instanceof HTMLInputElement ||
@@ -51,15 +72,19 @@ export function TicketWorkspace({
   attachmentCounts = {},
   currentUser,
   initialTickets,
-  users
+  users,
+  view = "all"
 }: {
   activeTicketId?: string
   attachmentCounts?: Record<string, number>
   currentUser: User
   initialTickets: Ticket[]
   users: User[]
+  view?: "all" | "my"
 }) {
-  const [tickets, setTickets] = useState(initialTickets)
+  const [tickets, setTickets] = useState(() =>
+    view === "my" ? sortMyTickets(initialTickets) : initialTickets
+  )
   const [selectedId, setSelectedId] = useState<string | null>(activeTicketId ?? null)
   const [commandOpen, setCommandOpen] = useState(false)
   const [composerOpen, setComposerOpen] = useState(false)
@@ -703,7 +728,7 @@ export function TicketWorkspace({
       )}
     >
       <Sidebar
-        current="Tasks"
+        current={view === "my" ? "My Tickets" : "All Tickets"}
         expanded={sidebarExpanded}
         onExpandedChange={setSidebarExpanded}
       />
@@ -712,10 +737,12 @@ export function TicketWorkspace({
           <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate text-[18px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
-                All tickets
+                {view === "my" ? "My tickets" : "All tickets"}
               </div>
               <div className="hidden truncate text-[12px] text-[var(--text-faint)] sm:block">
-                Engineering workspace · {tickets.length} tickets
+                {view === "my"
+                  ? `Assigned to you · ${tickets.length} open`
+                  : `Engineering workspace · ${tickets.length} tickets`}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -774,6 +801,7 @@ export function TicketWorkspace({
               tickets={tickets}
               selectedId={selectedId}
               users={users}
+              globalFilter={globalFilter}
               onOpen={openTicket}
               onQuickCreate={quickCreateTicket}
               onStatusChange={requestKanbanStatusChange}
@@ -1041,27 +1069,44 @@ function NewTicketModal({
     })
   }
 
-  return (
-    <ModalFrame title="New ticket" onClose={onClose} className="max-w-[760px]">
-      {/* Mode toggle */}
-      <div className="flex gap-1 border-b-[0.5px] border-[var(--border)] px-4 pt-3">
-        {(["manual", "ai"] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMode(m)}
-            className={cn(
-              "-mb-px border-b-2 pb-2.5 px-1 text-[13px] font-medium transition-colors",
-              mode === m
-                ? "border-[var(--accent)] text-[var(--text)]"
-                : "border-transparent text-[var(--text-faint)] hover:text-[var(--text-muted)]"
-            )}
-          >
-            {m === "manual" ? "Manual" : "Ask AI"}
-          </button>
-        ))}
-      </div>
+  const titleNode = (
+    <div className="flex min-w-0 items-center gap-2">
+      <input
+        aria-label="Ticket title"
+        value={draft.title}
+        onChange={(e) => patch({ title: e.target.value })}
+        placeholder="New ticket title…"
+        autoFocus={mode === "manual"}
+        className="min-w-0 flex-1 bg-transparent text-[14px] font-medium text-[var(--text)] outline-none placeholder:text-[var(--text-faint)]"
+      />
+    </div>
+  )
 
+  return (
+    <ModalFrame
+      title={titleNode}
+      headerActions={
+        <div className="flex gap-1 mr-1">
+          {(["manual", "ai"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors",
+                mode === m
+                  ? "bg-[var(--surface-2)] text-[var(--text)]"
+                  : "text-[var(--text-faint)] hover:text-[var(--text-muted)]"
+              )}
+            >
+              {m === "manual" ? "Manual" : "Ask AI"}
+            </button>
+          ))}
+        </div>
+      }
+      onClose={onClose}
+      className="max-w-[980px]"
+    >
       {mode === "ai" ? (
         <div className="space-y-3 p-4">
           <p className="text-[12px] text-[var(--text-faint)]">
@@ -1093,9 +1138,9 @@ function NewTicketModal({
           </div>
         </div>
       ) : (
-        <form onSubmit={submit} className="space-y-4 p-4">
-          {draft.title && mode === "manual" && aiPrompt ? (
-            <div className="flex items-center gap-2 rounded-md border-[0.5px] border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] px-3 py-2">
+        <form onSubmit={submit}>
+          {draft.title && aiPrompt ? (
+            <div className="flex items-center gap-2 border-b-[0.5px] border-[var(--border)] px-4 py-2">
               <span className="text-[11px] text-[var(--accent)]">AI draft — review and edit before creating</span>
               <button
                 type="button"
@@ -1107,117 +1152,166 @@ function NewTicketModal({
             </div>
           ) : null}
 
-          <div className="rounded-lg border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_62%,transparent)]">
-            <div className="border-b-[0.5px] border-[var(--border)] p-3">
-              <Input
-                autoFocus
-                value={draft.title}
-                onChange={(e) => patch({ title: e.target.value })}
-                placeholder="Title"
-                className="border-transparent bg-transparent px-0 text-[15px] font-medium focus-visible:outline-none"
-              />
-            </div>
-            <div className="p-3">
-              <Textarea
-                value={draft.description}
-                onChange={(e) => patch({ description: e.target.value })}
-                placeholder="Description"
-                className="min-h-28 border-transparent bg-transparent px-0 py-0 leading-6 focus-visible:outline-none"
-              />
-            </div>
+          <div className="grid min-h-0 gap-0 lg:grid-cols-[minmax(0,1fr)_300px]">
+            {/* Main content */}
+            <section className="min-w-0 space-y-5 border-b-[0.5px] border-[var(--border)] p-4 lg:border-b-0 lg:border-r-[0.5px]">
+              <div className="space-y-1.5">
+                <span className="block text-[11px] font-medium text-[var(--text-faint)]">Description</span>
+                <div className="rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)] px-3 py-2.5">
+                  <textarea
+                    value={draft.description}
+                    onChange={(e) => patch({ description: e.target.value })}
+                    placeholder="Add description"
+                    className="w-full resize-none bg-transparent text-[13px] leading-6 text-[var(--text-muted)] outline-none placeholder:text-[var(--text-faint)] hover:text-[var(--text)] focus:text-[var(--text)]"
+                    style={{ minHeight: "5rem" }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="block text-[11px] font-medium text-[var(--text-faint)]">Acceptance criteria</span>
+                <div className="overflow-hidden rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)]">
+                  {draft.acceptanceCriteria.length > 0 && (
+                    <div className="divide-y divide-[var(--border)]">
+                      {draft.acceptanceCriteria.map((criterion, index) => (
+                        <div
+                          key={index}
+                          className="grid grid-cols-[20px_minmax(0,1fr)_24px] items-center gap-2 px-3 py-2"
+                        >
+                          <span className="h-3.5 w-3.5 rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)]" />
+                          <input
+                            value={criterion}
+                            onChange={(e) => {
+                              const next = draft.acceptanceCriteria.slice()
+                              next[index] = e.target.value
+                              patch({ acceptanceCriteria: next })
+                            }}
+                            placeholder="Acceptance criterion"
+                            className="min-w-0 bg-transparent text-[13px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-faint)] focus:text-[var(--text)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => patch({ acceptanceCriteria: draft.acceptanceCriteria.filter((_, i) => i !== index) })}
+                            aria-label="Remove criterion"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className={cn("px-2 py-1.5", draft.acceptanceCriteria.length > 0 && "border-t-[0.5px] border-[var(--border)]")}>
+                    <button
+                      type="button"
+                      onClick={() => patch({ acceptanceCriteria: [...draft.acceptanceCriteria, ""] })}
+                      className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                    >
+                      <Plus size={11} />
+                      Add criterion
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="block text-[11px] font-medium text-[var(--text-faint)]">Labels</span>
+                <Input
+                  value={draft.labelText}
+                  onChange={(e) => patch({ labelText: e.target.value })}
+                  placeholder="github, state, filters"
+                />
+              </div>
+            </section>
+
+            {/* Properties sidebar */}
+            <aside className="p-4">
+              <div className="divide-y divide-[var(--border)] overflow-hidden rounded-xl border-[0.5px] border-[var(--border)]">
+                <ComposerPropRow label="Status">
+                  <ComposerSelect value={draft.status} onChange={(v) => patch({ status: v as Status })}>
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Priority">
+                  <ComposerSelect value={draft.priority} onChange={(v) => patch({ priority: v as Priority })}>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Work type">
+                  <ComposerSelect value={draft.workType} onChange={(v) => patch({ workType: v as WorkType })}>
+                    <option value="feature">Feature</option>
+                    <option value="enhancement">Enhancement</option>
+                    <option value="bug">Bug</option>
+                    <option value="task">Task</option>
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Assignee">
+                  <ComposerSelect value={draft.ownerId} onChange={(v) => patch({ ownerId: v })}>
+                    <option value="unassigned">Unassigned</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Area">
+                  <ComposerSelect value={draft.area} onChange={(v) => patch({ area: v as Area })}>
+                    <option value="platform">Platform</option>
+                    <option value="product">Product</option>
+                    <option value="integrations">Integrations</option>
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Component">
+                  <ComposerSelect value={draft.component} onChange={(v) => patch({ component: v as Component })}>
+                    <option value="tickets">Tickets</option>
+                    <option value="github">GitHub</option>
+                    <option value="routing">Routing</option>
+                    <option value="filters">Filters</option>
+                    <option value="state">State</option>
+                  </ComposerSelect>
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Estimate">
+                  <input
+                    value={draft.estimate}
+                    onChange={(e) => patch({ estimate: e.target.value })}
+                    placeholder="—"
+                    className="h-7 w-full appearance-none rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
+                  />
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Due date">
+                  <input
+                    type="date"
+                    value={draft.dueDate}
+                    onChange={(e) => patch({ dueDate: e.target.value })}
+                    className="h-7 w-full appearance-none rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
+                  />
+                </ComposerPropRow>
+
+                <ComposerPropRow label="Blocker">
+                  <input
+                    value={draft.blockerReason}
+                    onChange={(e) => patch({ blockerReason: e.target.value })}
+                    placeholder="—"
+                    className="h-7 w-full appearance-none rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
+                  />
+                </ComposerPropRow>
+              </div>
+            </aside>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            <Field label="Work type">
-              <NativeSelect value={draft.workType} onChange={(v) => patch({ workType: v as WorkType })}>
-                <option value="feature">Feature</option>
-                <option value="enhancement">Enhancement</option>
-                <option value="bug">Bug</option>
-                <option value="task">Task</option>
-              </NativeSelect>
-            </Field>
-            <Field label="Status">
-              <NativeSelect value={draft.status} onChange={(v) => patch({ status: v as Status })}>
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field label="Priority">
-              <NativeSelect value={draft.priority} onChange={(v) => patch({ priority: v as Priority })}>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </NativeSelect>
-            </Field>
-            <Field label="Area">
-              <NativeSelect value={draft.area} onChange={(v) => patch({ area: v as Area })}>
-                <option value="platform">Platform</option>
-                <option value="product">Product</option>
-                <option value="integrations">Integrations</option>
-              </NativeSelect>
-            </Field>
-            <Field label="Component">
-              <NativeSelect value={draft.component} onChange={(v) => patch({ component: v as Component })}>
-                <option value="tickets">Tickets</option>
-                <option value="github">GitHub</option>
-                <option value="routing">Routing</option>
-                <option value="filters">Filters</option>
-                <option value="state">State</option>
-              </NativeSelect>
-            </Field>
-            <Field label="Owner">
-              <NativeSelect value={draft.ownerId} onChange={(v) => patch({ ownerId: v })}>
-                <option value="unassigned">Unassigned</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field label="Estimate">
-              <Input
-                value={draft.estimate}
-                onChange={(e) => patch({ estimate: e.target.value })}
-                placeholder="3 pts"
-              />
-            </Field>
-            <Field label="Due date">
-              <Input
-                type="date"
-                value={draft.dueDate}
-                onChange={(e) => patch({ dueDate: e.target.value })}
-              />
-            </Field>
-          </div>
-
-          <Field label="Acceptance criteria">
-            <CriteriaChecklist
-              items={draft.acceptanceCriteria}
-              onChange={(items) => patch({ acceptanceCriteria: items })}
-            />
-          </Field>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            <Field label="Blocker reason">
-              <Textarea
-                value={draft.blockerReason}
-                onChange={(e) => patch({ blockerReason: e.target.value })}
-                placeholder="Only needed when blocked"
-                className="min-h-20"
-              />
-            </Field>
-            <Field label="Labels">
-              <Input
-                value={draft.labelText}
-                onChange={(e) => patch({ labelText: e.target.value })}
-                placeholder="github, state, filters"
-              />
-            </Field>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <div className="flex justify-end gap-2 border-t-[0.5px] border-[var(--border)] px-4 py-3">
+            <Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
             <Button type="submit" variant="quiet">Create ticket</Button>
           </div>
         </form>
@@ -1226,16 +1320,16 @@ function NewTicketModal({
   )
 }
 
-function Field({ children, label }: { children: ReactNode; label: string }) {
+function ComposerPropRow({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="block text-[11px] font-medium text-[var(--text-faint)]">{label}</span>
-      {children}
+    <label className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-2 px-3 py-2.5 transition-colors hover:bg-[color-mix(in_srgb,var(--surface-2)_60%,transparent)]">
+      <span className="text-[11px] font-medium text-[var(--text-faint)]">{label}</span>
+      <div className="min-w-0">{children}</div>
     </label>
   )
 }
 
-function NativeSelect({
+function ComposerSelect({
   children,
   onChange,
   value
@@ -1245,19 +1339,13 @@ function NativeSelect({
   value: string
 }) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-8 w-full appearance-none rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface)] py-0 pl-3 pr-8 text-[13px] text-[var(--text)] outline-none focus-visible:focus-input"
-      >
-        {children}
-      </select>
-      <ChevronDown
-        size={14}
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)]"
-      />
-    </div>
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="h-7 w-full appearance-none rounded-md border-[0.5px] border-transparent bg-transparent px-0 text-[13px] text-[var(--text-muted)] outline-none transition-colors hover:text-[var(--text)] focus:border-[color-mix(in_srgb,var(--accent)_42%,transparent)] focus:bg-[color-mix(in_srgb,var(--surface-2)_38%,transparent)] focus:px-2 focus:text-[var(--text)]"
+    >
+      {children}
+    </select>
   )
 }
 
