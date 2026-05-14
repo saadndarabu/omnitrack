@@ -221,7 +221,7 @@ export function TicketTable({
   return (
     <div>
       {/* Subheader: view switcher left, controls right */}
-      <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+      <div className="bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
         <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 sm:px-6 lg:px-8">
           <div className="py-1.5">
             <TicketViewSwitcher value={viewMode} onChange={onViewModeChange ?? (() => {})} />

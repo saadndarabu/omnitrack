@@ -753,19 +753,27 @@ export function TicketWorkspace({
       />
       <div className="min-h-screen">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
-          <div className="mx-auto flex h-[60px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
-            {/* Saved view filters */}
+          <div className="mx-auto flex h-[48px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+            {/* Saved view tabs */}
             <div className="flex items-center gap-0.5">
-              {SAVED_VIEWS.map((sv) => (
-                <button
-                  key={sv.id}
-                  type="button"
-                  onClick={() => setSavedViewId(sv.id)}
-                  className="inline-flex items-center rounded-lg px-3 py-1.5 text-[14px] font-semibold text-[var(--text-faint)] transition-colors whitespace-nowrap hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
-                >
-                  {sv.label}
-                </button>
-              ))}
+              {SAVED_VIEWS.map((sv) => {
+                const active = sv.id === savedViewId
+                return (
+                  <button
+                    key={sv.id}
+                    type="button"
+                    onClick={() => setSavedViewId(sv.id)}
+                    className={cn(
+                      "inline-flex items-center rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors whitespace-nowrap",
+                      active
+                        ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                        : "text-[var(--text-faint)] hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
+                    )}
+                  >
+                    {sv.label}
+                  </button>
+                )
+              })}
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <div className="relative hidden sm:flex items-center">
@@ -781,7 +789,7 @@ export function TicketWorkspace({
                   onKeyDown={(e) => e.key === "Escape" && (setGlobalFilter(""), e.currentTarget.blur())}
                   placeholder="Search…"
                   aria-label="Search tickets"
-                  className="h-[34px] w-[200px] rounded-xl border border-[var(--border)] bg-[var(--surface)] pl-8 pr-3 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:w-[260px] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-[width] duration-150"
+                  className="h-[28px] w-[180px] rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-8 pr-3 text-[12px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:w-[240px] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-[width] duration-150"
                 />
                 {globalFilter ? (
                   <button
@@ -798,8 +806,8 @@ export function TicketWorkspace({
                 <HelpCircle size={17} />
               </IconButton>
               <NotificationBell userId={currentUser.id} />
-              <Button variant="primary" onClick={() => setComposerOpen(true)}>
-                <Plus size={15} />
+              <Button variant="primary" className="h-[28px] rounded-lg px-3 text-[12px]" onClick={() => setComposerOpen(true)}>
+                <Plus size={13} />
                 <span className="hidden sm:inline">New ticket</span>
               </Button>
             </div>
@@ -807,11 +815,6 @@ export function TicketWorkspace({
         </header>
 
         <main className="flex flex-col">
-          <div className="mx-auto w-full max-w-[1440px] px-3 pb-1 pt-5 sm:px-6 lg:px-8">
-            <h1 className="text-[22px] font-[700] leading-tight tracking-[-0.02em] text-[var(--text)]">
-              Tickets
-            </h1>
-          </div>
           {viewMode === "table" ? (
             <TicketTable
               tickets={visibleTickets}
@@ -826,7 +829,7 @@ export function TicketWorkspace({
             />
           ) : (
             <>
-              <div className="border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+              <div className="bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
                 <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 py-1.5 sm:px-6 lg:px-8">
                   <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
                 </div>

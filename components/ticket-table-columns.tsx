@@ -3,7 +3,6 @@
 import { type ColumnDef } from "@tanstack/react-table"
 import { Bug, CheckCircle2, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles, TriangleAlert } from "lucide-react"
 import { Avatar } from "@/components/avatar"
-import { StatusIcon } from "@/components/status-icon"
 import { Tag } from "@/components/tag"
 import { relTime } from "@/lib/rel-time"
 import { STATUS_LABELS, type Status } from "@/lib/status"
@@ -97,11 +96,10 @@ export function StatusCell({ status }: { status: Status }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] items-center gap-1.5 rounded-md border px-2 text-[11px] font-semibold leading-none tracking-wide",
+        "inline-flex h-[22px] w-[88px] items-center justify-center rounded-md border text-[11px] font-semibold leading-none tracking-wide",
         statusChip[status]
       )}
     >
-      <StatusIcon status={status} size={11} />
       {STATUS_LABELS[status]}
     </span>
   )
@@ -261,10 +259,11 @@ function formatAbsDate(iso: string): string {
 
 function dueDateDisplay(dueDate: string | null, status: Status): {
   label: string
-  overdueDays: number
+  isOverdue: boolean
+  isDue: boolean
   tooltip: string
 } {
-  if (!dueDate) return { label: "—", overdueDays: 0, tooltip: "" }
+  if (!dueDate) return { label: "—", isOverdue: false, isDue: false, tooltip: "" }
 
   const now = new Date()
   now.setHours(0, 0, 0, 0)
@@ -272,29 +271,40 @@ function dueDateDisplay(dueDate: string | null, status: Status): {
   const diffDays = Math.round((due.getTime() - now.getTime()) / 86400000)
   const tooltip = formatAbsDate(dueDate)
 
+  // Done: show relative past tense, no overdue treatment
   if (status === "done") {
-    return { label: diffDays === 0 ? "Today" : diffDays === 1 ? "Tomorrow" : diffDays === -1 ? "Yesterday" : diffDays > 0 ? `in ${diffDays}d` : `${-diffDays}d ago`, overdueDays: 0, tooltip }
+    const label = diffDays >= 0
+      ? (diffDays === 0 ? "Today" : diffDays === 1 ? "Tomorrow" : `${diffDays}d`)
+      : `${-diffDays}d ago`
+    return { label, isOverdue: false, isDue: false, tooltip }
   }
 
+  // Overdue: icon + bare days number
   if (diffDays < 0) {
-    const days = -diffDays
-    return { label: days === 1 ? "1 day overdue" : `${days} days overdue`, overdueDays: days, tooltip: `${tooltip} · ${days} day${days === 1 ? "" : "s"} overdue` }
+    return { label: `${-diffDays}d`, isOverdue: true, isDue: false, tooltip }
   }
-  if (diffDays === 0) return { label: "Today", overdueDays: 0, tooltip }
-  if (diffDays === 1) return { label: "Tomorrow", overdueDays: 0, tooltip }
-  return { label: `in ${diffDays}d`, overdueDays: 0, tooltip }
+
+  // Due today or tomorrow
+  if (diffDays === 0) return { label: "Today", isOverdue: false, isDue: true, tooltip }
+  if (diffDays === 1) return { label: "1d", isOverdue: false, isDue: true, tooltip }
+
+  // Due in future: bare days, not muted
+  return { label: `${diffDays}d`, isOverdue: false, isDue: true, tooltip }
 }
 
 export function DueDateCell({ ticket }: { ticket: Ticket }) {
-  const { label, overdueDays, tooltip } = dueDateDisplay(ticket.dueDate, ticket.status)
-  const isOverdue = overdueDays > 0
+  const { label, isOverdue, isDue, tooltip } = dueDateDisplay(ticket.dueDate, ticket.status)
 
   return (
     <span
       title={tooltip || undefined}
       className={cn(
         "inline-flex items-center gap-1 text-[12px]",
-        isOverdue ? "font-medium text-[var(--status-blocked)]" : "text-[var(--text-muted)]"
+        isOverdue
+          ? "font-semibold text-[var(--status-blocked)]"
+          : isDue
+            ? "font-medium text-[var(--text)]"
+            : "text-[var(--text-faint)]"
       )}
     >
       {isOverdue ? <TriangleAlert size={11} className="shrink-0" /> : null}
