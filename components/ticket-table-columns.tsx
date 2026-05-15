@@ -109,7 +109,7 @@ export function PriorityCell({ priority }: { priority: Priority }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] items-center rounded-md border px-2 text-[11px] leading-none tracking-wide",
+        "inline-flex h-[22px] w-[88px] items-center justify-center rounded-md border text-[11px] leading-none tracking-wide",
         priorityPill[priority]
       )}
     >
