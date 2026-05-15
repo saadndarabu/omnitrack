@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { dbGetCurrentUser } from "@/lib/db/users"
@@ -18,7 +19,10 @@ export default async function ConnectorsPage() {
     <div className="flex min-h-screen">
       <SidebarWrapper current="Connectors" />
       <main className="flex-1 pl-[76px] md:pl-[232px]">
-        <ConnectorsShell user={user} />
+        {/* Suspense required because ConnectorsShell uses useSearchParams */}
+        <Suspense>
+          <ConnectorsShell user={user} />
+        </Suspense>
       </main>
     </div>
   )
