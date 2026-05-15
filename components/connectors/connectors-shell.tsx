@@ -20,16 +20,17 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
     setLoading(true)
     try {
       const supabase = createSupabaseBrowserClient()
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      // linkIdentity links GitHub to the existing session without replacing it.
+      // signInWithOAuth would create a new session and lose the Google session.
+      const { error: oauthError } = await supabase.auth.linkIdentity({
         provider: "github",
         options: {
-          // After GitHub auth the callback stores the identity and redirects here
-          redirectTo: `${window.location.origin}/auth/callback?next=/connectors`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/connectors&link=github`,
           scopes: "read:user user:email",
         },
       })
       if (oauthError) throw oauthError
-      // The page will navigate away — no state update needed here
+      // Page navigates away to GitHub — no further state update needed
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not initiate GitHub connection")
       setLoading(false)

@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const code       = requestUrl.searchParams.get("code")
   const oauthError = requestUrl.searchParams.get("error")
   const next       = requestUrl.searchParams.get("next") ?? "/dashboard"
+  const link       = requestUrl.searchParams.get("link") // "github" when coming from linkIdentity
 
   if (oauthError) {
     console.error("[auth/callback] OAuth error:", oauthError, requestUrl.searchParams.get("error_description"))
@@ -26,32 +27,41 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=oauth", request.url))
   }
 
+  const primaryProvider = data.user.app_metadata?.provider as string | undefined
+
   // Google sign-in: enforce @sirp.io domain
-  const provider = data.user.app_metadata?.provider as string | undefined
-  if (provider === "google" && !data.user.email?.endsWith("@sirp.io")) {
+  if (primaryProvider === "google" && !link && !data.user.email?.endsWith("@sirp.io")) {
     await supabase.auth.signOut()
     return NextResponse.redirect(new URL("/login?error=domain", request.url))
   }
 
-  // GitHub link: store GitHub identity against the user's profile
-  if (provider === "github") {
-    const identity = data.user.identities?.find(i => i.provider === "github")
-    const githubUsername = (identity?.identity_data?.["user_name"] as string | undefined)
-      ?? (identity?.identity_data?.["preferred_username"] as string | undefined)
-      ?? ""
-    const githubEmail = (identity?.identity_data?.["email"] as string | undefined) ?? ""
+  // GitHub identity link: extract and store GitHub username + email.
+  // This fires both for linkIdentity (link=github) and for direct GitHub sign-in.
+  const isGitHubLink = link === "github" || primaryProvider === "github"
+  if (isGitHubLink) {
+    const githubIdentity = data.user.identities?.find(i => i.provider === "github")
+    const identityData   = githubIdentity?.identity_data ?? {}
+
+    const githubUsername =
+      (identityData["user_name"]           as string | undefined) ??
+      (identityData["preferred_username"]   as string | undefined) ??
+      (identityData["login"]                as string | undefined) ??
+      ""
+    const githubEmail =
+      (identityData["email"] as string | undefined) ?? ""
 
     if (githubUsername) {
       try {
         await dbConnectGitHub(supabase, data.user.id, githubUsername, githubEmail)
       } catch (err) {
         console.error("[auth/callback] Failed to store GitHub identity:", err)
-        // Non-fatal: user is still authenticated, just won't see GitHub linked
+        // Non-fatal — user lands on /connectors where they can retry
       }
+    } else {
+      console.warn("[auth/callback] GitHub identity present but no username found", identityData)
     }
   }
 
-  // Validate `next` to prevent open redirect
   const safeNext = next.startsWith("/") ? next : "/dashboard"
   return NextResponse.redirect(new URL(safeNext, request.url))
 }
