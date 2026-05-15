@@ -3,6 +3,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type UserRoleDb   = "admin" | "member" | "viewer"
+export type UserAreaDb   = "frontend" | "backend" | "automation" | "agents" | "sara" | "omnimap" | "llm" | "devops" | "rag"
 
 export type WorkTypeDb   = "feature" | "enhancement" | "bug" | "task"
 export type StatusDb     = "backlog" | "todo" | "in_progress" | "in_review" | "done" | "blocked"
@@ -16,26 +17,41 @@ export interface Database {
     Tables: {
       users: {
         Row: {
-          id:         string
-          name:       string
-          email:      string
-          initials:   string
-          role:       UserRoleDb
-          created_at: string
+          id:                   string
+          name:                 string
+          email:                string
+          initials:             string
+          role:                 UserRoleDb
+          areas:                UserAreaDb[]
+          avatar_url:           string | null
+          github_username:      string | null
+          github_email:         string | null
+          github_connected_at:  string | null
+          created_at:           string
         }
         Insert: {
-          id:          string
-          name:        string
-          email:       string
-          initials:    string
-          role?:       UserRoleDb
-          created_at?: string
+          id:                   string
+          name:                 string
+          email:                string
+          initials:             string
+          role?:                UserRoleDb
+          areas?:               UserAreaDb[]
+          avatar_url?:          string | null
+          github_username?:     string | null
+          github_email?:        string | null
+          github_connected_at?: string | null
+          created_at?:          string
         }
         Update: {
-          name?:       string
-          email?:      string
-          initials?:   string
-          role?:       UserRoleDb
+          name?:                string
+          email?:               string
+          initials?:            string
+          role?:                UserRoleDb
+          areas?:               UserAreaDb[]
+          avatar_url?:          string | null
+          github_username?:     string | null
+          github_email?:        string | null
+          github_connected_at?: string | null
         }
       }
       tickets: {
@@ -195,6 +211,7 @@ export interface Database {
     }
     Enums: {
       user_role:          UserRoleDb
+      user_area:          UserAreaDb
       work_type:          WorkTypeDb
       ticket_status:      StatusDb
       priority:           PriorityDb

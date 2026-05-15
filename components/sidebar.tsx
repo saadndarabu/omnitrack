@@ -5,20 +5,27 @@ import {
   ChevronRight,
   FolderKanban,
   LayoutDashboard,
+  Link2,
   ListTodo,
-  User
+  User,
+  UserCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const primaryItems = [
-  { label: "Dashboard", Icon: LayoutDashboard, href: "/dashboard" },
-  { label: "My Tickets", Icon: User, href: "/my" },
-  { label: "All Tickets", Icon: ListTodo, href: "/tickets" },
-  { label: "Projects", Icon: FolderKanban, href: "#" }
+  { label: "Dashboard",  Icon: LayoutDashboard, href: "/dashboard" },
+  { label: "My Tickets", Icon: User,            href: "/my" },
+  { label: "All Tickets",Icon: ListTodo,        href: "/tickets" },
+  { label: "Projects",   Icon: FolderKanban,    href: "#" },
+]
+
+const bottomItems = [
+  { label: "Profile",    Icon: UserCircle, href: "/profile" },
+  { label: "Connectors", Icon: Link2,      href: "/connectors" },
 ]
 
 export function Sidebar({
-  current = "Tasks",
+  current = "Dashboard",
   expanded,
   onExpandedChange
 }: {
@@ -58,6 +65,7 @@ export function Sidebar({
           ) : null}
         </div>
 
+        {/* Primary navigation */}
         <nav aria-label="Workspace navigation" className="space-y-1">
           {primaryItems.map(({ label, Icon, href }) => {
             const active = label === current
@@ -81,10 +89,7 @@ export function Sidebar({
                     active ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text)]"
                   )}
                 >
-                  <Icon
-                    size={17}
-                    strokeWidth={active ? 2.4 : 2}
-                  />
+                  <Icon size={17} strokeWidth={active ? 2.4 : 2} />
                 </span>
                 {expanded ? <span className="truncate">{label}</span> : null}
               </a>
@@ -94,6 +99,39 @@ export function Sidebar({
 
         <div className="mt-auto" />
 
+        {/* Bottom: Profile + Connectors */}
+        <nav aria-label="Account navigation" className="mb-2 space-y-1">
+          {bottomItems.map(({ label, Icon, href }) => {
+            const active = label === current
+            return (
+              <a
+                key={label}
+                href={href}
+                title={expanded ? undefined : label}
+                aria-label={label}
+                className={cn(
+                  "group flex h-[38px] items-center rounded-[14px] text-[13px] font-medium transition-colors duration-[120ms] ease-out",
+                  expanded ? "gap-3 px-2.5" : "justify-center px-0",
+                  active
+                    ? "bg-[#111827] text-white shadow-[0_8px_20px_rgba(17,24,39,0.12)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--surface-3)] hover:text-[var(--text)]"
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg transition-colors",
+                    active ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text)]"
+                  )}
+                >
+                  <Icon size={16} strokeWidth={active ? 2.4 : 2} />
+                </span>
+                {expanded ? <span className="truncate">{label}</span> : null}
+              </a>
+            )
+          })}
+        </nav>
+
+        {/* Collapse toggle */}
         <button
           type="button"
           onClick={() => onExpandedChange(!expanded)}

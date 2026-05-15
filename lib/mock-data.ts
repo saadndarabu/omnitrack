@@ -1,35 +1,19 @@
 import type { Ticket } from "@/types/ticket"
 import type { User } from "@/types/user"
 
+const nullProfile = {
+  areas: [] as User["areas"],
+  avatarUrl: null,
+  githubUsername: null,
+  githubEmail: null,
+  githubConnectedAt: null,
+}
+
 export const users: User[] = [
-  {
-    id: "user_saadia",
-    name: "Saadia Noor",
-    email: "saadia@sirp.io",
-    initials: "SN",
-    role: "admin"
-  },
-  {
-    id: "user_haris",
-    name: "Haris Malik",
-    email: "haris@sirp.io",
-    initials: "HM",
-    role: "member"
-  },
-  {
-    id: "user_mina",
-    name: "Mina Qureshi",
-    email: "mina@sirp.io",
-    initials: "MQ",
-    role: "member"
-  },
-  {
-    id: "user_omar",
-    name: "Omar Shah",
-    email: "omar@sirp.io",
-    initials: "OS",
-    role: "viewer"
-  }
+  { id: "user_saadia", name: "Saadia Noor",  email: "saadia@sirp.io", initials: "SN", role: "admin",  ...nullProfile },
+  { id: "user_haris",  name: "Haris Malik",  email: "haris@sirp.io",  initials: "HM", role: "member", ...nullProfile },
+  { id: "user_mina",   name: "Mina Qureshi", email: "mina@sirp.io",   initials: "MQ", role: "member", ...nullProfile },
+  { id: "user_omar",   name: "Omar Shah",    email: "omar@sirp.io",   initials: "OS", role: "viewer", ...nullProfile },
 ]
 
 export const currentUser = users[0]

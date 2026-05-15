@@ -14,11 +14,16 @@ type AttachmentRowWithUploader = TicketAttachmentRow & {
 
 function rowToUser(row: UserRow): User {
   return {
-    id:       row.id,
-    name:     row.name,
-    email:    row.email as User["email"],
-    initials: row.initials,
-    role:     row.role as User["role"]
+    id:                row.id,
+    name:              row.name,
+    email:             row.email as User["email"],
+    initials:          row.initials,
+    role:              row.role as User["role"],
+    areas:             (row.areas ?? []) as User["areas"],
+    avatarUrl:         row.avatar_url ?? null,
+    githubUsername:    row.github_username ?? null,
+    githubEmail:       row.github_email ?? null,
+    githubConnectedAt: row.github_connected_at ?? null,
   }
 }
 
