@@ -17,7 +17,7 @@ export default async function ConnectorsPage() {
 
   return (
     <div className="flex min-h-screen">
-      <SidebarWrapper current="Connectors" />
+      <SidebarWrapper current="Connectors" githubConnected={!!user.githubUsername} />
       <main className="flex-1 pl-[76px] md:pl-[232px]">
         {/* Suspense required because ConnectorsShell uses useSearchParams */}
         <Suspense>

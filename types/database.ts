@@ -208,6 +208,166 @@ export interface Database {
           read?: boolean
         }
       }
+      github_installations: {
+        Row: {
+          id:                    string
+          installation_id:       number
+          account_login:         string | null
+          account_id:            number | null
+          account_type:          string | null
+          repository_selection:  string | null
+          app_slug:              string | null
+          installed_by_user_id:  string | null
+          suspended_at:          string | null
+          created_at:            string
+          updated_at:            string
+        }
+        Insert: {
+          id?:                   string
+          installation_id:       number
+          account_login?:        string | null
+          account_id?:           number | null
+          account_type?:         string | null
+          repository_selection?: string | null
+          app_slug?:             string | null
+          installed_by_user_id?: string | null
+          suspended_at?:         string | null
+          created_at?:           string
+          updated_at?:           string
+        }
+        Update: {
+          account_login?:        string | null
+          account_id?:           number | null
+          account_type?:         string | null
+          repository_selection?: string | null
+          app_slug?:             string | null
+          installed_by_user_id?: string | null
+          suspended_at?:         string | null
+          updated_at?:           string
+        }
+      }
+      github_repositories: {
+        Row: {
+          id:               string
+          installation_id:  number
+          github_repo_id:   number
+          owner:            string
+          name:             string
+          full_name:        string
+          private:          boolean
+          default_branch:   string | null
+          html_url:         string | null
+          enabled:          boolean
+          created_at:       string
+          updated_at:       string
+        }
+        Insert: {
+          id?:              string
+          installation_id:  number
+          github_repo_id:   number
+          owner:            string
+          name:             string
+          full_name:        string
+          private?:         boolean
+          default_branch?:  string | null
+          html_url?:        string | null
+          enabled?:         boolean
+          created_at?:      string
+          updated_at?:      string
+        }
+        Update: {
+          owner?:           string
+          name?:            string
+          full_name?:       string
+          private?:         boolean
+          default_branch?:  string | null
+          html_url?:        string | null
+          enabled?:         boolean
+        }
+      }
+      github_pull_requests: {
+        Row: {
+          id:                  string
+          ticket_id:           string | null
+          installation_id:     number
+          github_repo_id:      number
+          repo_full_name:      string
+          pr_number:           number
+          pr_title:            string | null
+          pr_url:              string | null
+          branch_name:         string | null
+          base_branch:         string | null
+          state:               string | null
+          merged:              boolean
+          github_created_at:   string | null
+          github_updated_at:   string | null
+          created_by_user_id:  string | null
+          created_at:          string
+          updated_at:          string
+        }
+        Insert: {
+          id?:                 string
+          ticket_id?:          string | null
+          installation_id:     number
+          github_repo_id:      number
+          repo_full_name:      string
+          pr_number:           number
+          pr_title?:           string | null
+          pr_url?:             string | null
+          branch_name?:        string | null
+          base_branch?:        string | null
+          state?:              string | null
+          merged?:             boolean
+          github_created_at?:  string | null
+          github_updated_at?:  string | null
+          created_by_user_id?: string | null
+          created_at?:         string
+          updated_at?:         string
+        }
+        Update: {
+          ticket_id?:          string | null
+          pr_title?:           string | null
+          pr_url?:             string | null
+          branch_name?:        string | null
+          base_branch?:        string | null
+          state?:              string | null
+          merged?:             boolean
+          github_created_at?:  string | null
+          github_updated_at?:  string | null
+        }
+      }
+      github_webhook_events: {
+        Row: {
+          id:              string
+          delivery_id:     string
+          event_type:      string
+          action:          string | null
+          installation_id: number | null
+          github_repo_id:  number | null
+          repo_full_name:  string | null
+          payload:         Json
+          processed:       boolean
+          error:           string | null
+          created_at:      string
+        }
+        Insert: {
+          id?:              string
+          delivery_id:      string
+          event_type:       string
+          action?:          string | null
+          installation_id?: number | null
+          github_repo_id?:  number | null
+          repo_full_name?:  string | null
+          payload:          Json
+          processed?:       boolean
+          error?:           string | null
+          created_at?:      string
+        }
+        Update: {
+          processed?: boolean
+          error?:     string | null
+        }
+      }
     }
     Enums: {
       user_role:          UserRoleDb

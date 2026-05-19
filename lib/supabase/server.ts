@@ -1,6 +1,11 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import type { Database } from "@/types/database"
+
+// Relaxed schema generic — matches the shape lib/db/* expects.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ServerClient = SupabaseClient<Database, any, any>
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -13,7 +18,7 @@ function getSupabaseConfig() {
   return { anonKey, url }
 }
 
-export async function createSupabaseServerClient() {
+export async function createSupabaseServerClient(): Promise<ServerClient> {
   const { anonKey, url } = getSupabaseConfig()
   const cookieStore = await cookies()
 
@@ -37,5 +42,6 @@ export async function createSupabaseServerClient() {
         }
       }
     }
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any as ServerClient
 }

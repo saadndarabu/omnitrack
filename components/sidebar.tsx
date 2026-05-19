@@ -27,11 +27,13 @@ const bottomItems = [
 export function Sidebar({
   current = "Dashboard",
   expanded,
-  onExpandedChange
+  onExpandedChange,
+  githubConnected = false,
 }: {
   current?: string
   expanded: boolean
   onExpandedChange: (expanded: boolean) => void
+  githubConnected?: boolean
 }) {
   return (
     <aside
@@ -103,6 +105,8 @@ export function Sidebar({
         <nav aria-label="Account navigation" className="mb-2 space-y-1">
           {bottomItems.map(({ label, Icon, href }) => {
             const active = label === current
+            const isConnectors = label === "Connectors"
+            const showGreen = isConnectors && githubConnected
             return (
               <a
                 key={label}
@@ -112,20 +116,38 @@ export function Sidebar({
                 className={cn(
                   "group flex h-[38px] items-center rounded-[14px] text-[13px] font-medium transition-colors duration-[120ms] ease-out",
                   expanded ? "gap-3 px-2.5" : "justify-center px-0",
-                  active
+                  showGreen && !active
+                    ? "text-[#16a34a] hover:bg-[var(--surface-3)] hover:text-[#16a34a]"
+                    : active
                     ? "bg-[#111827] text-white shadow-[0_8px_20px_rgba(17,24,39,0.12)]"
                     : "text-[var(--text-muted)] hover:bg-[var(--surface-3)] hover:text-[var(--text)]"
                 )}
               >
                 <span
                   className={cn(
-                    "inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg transition-colors",
-                    active ? "text-white" : "text-[var(--text-muted)] group-hover:text-[var(--text)]"
+                    "relative inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg transition-colors",
+                    showGreen && !active
+                      ? "text-[#16a34a]"
+                      : active
+                      ? "text-white"
+                      : "text-[var(--text-muted)] group-hover:text-[var(--text)]"
                   )}
                 >
                   <Icon size={16} strokeWidth={active ? 2.4 : 2} />
+                  {showGreen && (
+                    <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[#16a34a] ring-2 ring-[var(--surface-2)]" />
+                  )}
                 </span>
-                {expanded ? <span className="truncate">{label}</span> : null}
+                {expanded ? (
+                  <span className="flex min-w-0 flex-1 items-center justify-between gap-1 truncate">
+                    <span className="truncate">{label}</span>
+                    {showGreen && (
+                      <span className="shrink-0 rounded-full bg-[#16a34a]/15 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-[#16a34a]">
+                        Connected
+                      </span>
+                    )}
+                  </span>
+                ) : null}
               </a>
             )
           })}

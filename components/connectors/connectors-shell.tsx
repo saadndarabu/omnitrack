@@ -30,8 +30,15 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
     async function syncGitHub() {
       try {
         const supabase = createSupabaseBrowserClient()
-        const { data: { user: authUser } } = await supabase.auth.getUser()
+        let { data: { user: authUser } } = await supabase.auth.getUser()
         if (!authUser) throw new Error("Not authenticated")
+
+        // After linkIdentity the browser session may not yet carry the GitHub
+        // identity — force a refresh so identities[] is up to date.
+        if (!authUser.identities?.find(i => i.provider === "github")) {
+          const { data: refreshed } = await supabase.auth.refreshSession()
+          if (refreshed.user) authUser = refreshed.user
+        }
 
         const githubIdentity = authUser.identities?.find(i => i.provider === "github")
         const identityData   = githubIdentity?.identity_data ?? {}
