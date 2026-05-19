@@ -3,20 +3,16 @@
 import {
   ChevronLeft,
   ChevronRight,
-  FolderKanban,
   LayoutDashboard,
   Link2,
   ListTodo,
-  User,
   UserCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const primaryItems = [
   { label: "Dashboard",  Icon: LayoutDashboard, href: "/dashboard" },
-  { label: "My Tickets", Icon: User,            href: "/my" },
   { label: "All Tickets",Icon: ListTodo,        href: "/tickets" },
-  { label: "Projects",   Icon: FolderKanban,    href: "#" },
 ]
 
 const bottomItems = [
@@ -43,6 +39,17 @@ export function Sidebar({
         expanded ? "w-[232px] px-3" : "w-[76px] px-2"
       )}
     >
+      {/* Collapse/expand toggle on right edge */}
+      <button
+        type="button"
+        onClick={() => onExpandedChange(!expanded)}
+        aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
+        aria-expanded={expanded}
+        className="absolute -right-3.5 top-1/2 z-30 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] shadow-sm transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+      >
+        {expanded ? <ChevronLeft size={13} /> : <ChevronRight size={13} />}
+      </button>
+
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div
@@ -153,20 +160,6 @@ export function Sidebar({
           })}
         </nav>
 
-        {/* Collapse toggle */}
-        <button
-          type="button"
-          onClick={() => onExpandedChange(!expanded)}
-          aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
-          aria-expanded={expanded}
-          className={cn(
-            "flex h-9 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]",
-            expanded ? "justify-between px-2.5" : "justify-center px-0"
-          )}
-        >
-          {expanded ? <span>Collapse</span> : null}
-          {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={16} />}
-        </button>
       </div>
     </aside>
   )
