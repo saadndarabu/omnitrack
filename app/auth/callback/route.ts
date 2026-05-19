@@ -8,6 +8,36 @@ export async function GET(request: Request) {
   const oauthError = requestUrl.searchParams.get("error")
   const next       = requestUrl.searchParams.get("next") ?? "/dashboard"
 
+  // identity_already_exists means the GitHub account is already linked in Supabase
+  // auth but the DB row may not reflect it. Recover by reading the current session
+  // and syncing whatever GitHub identity is already there.
+  const errorCode = requestUrl.searchParams.get("error_code")
+  if (oauthError && errorCode === "identity_already_exists") {
+    const safeNext = next.startsWith("/") ? next : "/dashboard"
+    const supabase = await createSupabaseServerClient()
+    const { data: { user: sessionUser } } = await supabase.auth.getUser()
+    if (sessionUser) {
+      const githubIdentity = sessionUser.identities?.find(i => i.provider === "github")
+      if (githubIdentity) {
+        const d = githubIdentity.identity_data ?? {}
+        const githubUsername =
+          (d["user_name"]          as string | undefined) ??
+          (d["preferred_username"] as string | undefined) ??
+          (d["login"]              as string | undefined) ??
+          ""
+        const githubEmail = (d["email"] as string | undefined) ?? ""
+        if (githubUsername) {
+          try {
+            await dbConnectGitHub(supabase, sessionUser.id, githubUsername, githubEmail)
+          } catch (dbErr) {
+            console.error("[auth/callback] GitHub DB sync (identity_already_exists) failed:", dbErr)
+          }
+        }
+      }
+    }
+    return NextResponse.redirect(new URL(safeNext, request.url))
+  }
+
   if (oauthError) {
     console.error("[auth/callback] OAuth error:", oauthError, requestUrl.searchParams.get("error_description"))
     return NextResponse.redirect(new URL("/login?error=oauth", request.url))
