@@ -368,6 +368,77 @@ export interface Database {
           error?:     string | null
         }
       }
+      slack_connections: {
+        Row: {
+          id:                    string
+          workspace_id:          string
+          slack_team_id:         string
+          slack_team_name:       string | null
+          bot_user_id:           string | null
+          bot_access_token:      string
+          default_channel_id:    string | null
+          default_channel_name:  string | null
+          approval_channel_id:   string | null
+          approval_channel_name: string | null
+          connected_by:          string | null
+          connected_at:          string
+          updated_at:            string
+        }
+        Insert: {
+          id?:                   string
+          workspace_id:          string
+          slack_team_id:         string
+          slack_team_name?:      string | null
+          bot_user_id?:          string | null
+          bot_access_token:      string
+          default_channel_id?:   string | null
+          default_channel_name?: string | null
+          approval_channel_id?:  string | null
+          approval_channel_name?: string | null
+          connected_by?:         string | null
+          connected_at?:         string
+          updated_at?:           string
+        }
+        Update: {
+          slack_team_name?:      string | null
+          bot_user_id?:          string | null
+          bot_access_token?:     string
+          default_channel_id?:   string | null
+          default_channel_name?: string | null
+          approval_channel_id?:  string | null
+          approval_channel_name?: string | null
+          connected_by?:         string | null
+          updated_at?:           string
+        }
+      }
+      slack_notification_settings: {
+        Row: {
+          id:           string
+          workspace_id: string
+          event_type:   string
+          channel_id:   string
+          channel_name: string | null
+          enabled:      boolean
+          created_at:   string
+          updated_at:   string
+        }
+        Insert: {
+          id?:          string
+          workspace_id: string
+          event_type:   string
+          channel_id:   string
+          channel_name?: string | null
+          enabled?:     boolean
+          created_at?:  string
+          updated_at?:  string
+        }
+        Update: {
+          channel_id?:   string
+          channel_name?: string | null
+          enabled?:      boolean
+          updated_at?:   string
+        }
+      }
     }
     Enums: {
       user_role:          UserRoleDb
