@@ -828,22 +828,17 @@ export function TicketWorkspace({
               onViewModeChange={setViewMode}
             />
           ) : (
-            <>
-              <div className="bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
-                <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 py-1.5 sm:px-6 lg:px-8">
-                  <TicketViewSwitcher value={viewMode} onChange={setViewMode} />
-                </div>
-              </div>
-              <TicketKanban
-                tickets={visibleTickets}
-                selectedId={selectedId}
-                users={users}
-                globalFilter={globalFilter}
-                onOpen={openTicket}
-                onQuickCreate={quickCreateTicket}
-                onStatusChange={requestKanbanStatusChange}
-              />
-            </>
+            <TicketKanban
+              tickets={visibleTickets}
+              selectedId={selectedId}
+              users={users}
+              globalFilter={globalFilter}
+              onOpen={openTicket}
+              onQuickCreate={quickCreateTicket}
+              onStatusChange={requestKanbanStatusChange}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
           )}
         </main>
       </div>

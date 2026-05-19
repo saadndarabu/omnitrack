@@ -29,9 +29,10 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { AlertOctagon, CalendarDays, Check, Loader2, SlidersHorizontal, SquareDashed, X } from "lucide-react"
+import { AlertOctagon, CalendarDays, Check, GitBranch, Loader2, SlidersHorizontal, SquareDashed, X } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { StatusIcon } from "@/components/status-icon"
+import { TicketViewSwitcher } from "@/components/ticket-view-switcher"
 import { Popover } from "@/components/ui/popover"
 import {
   PriorityCell,
@@ -82,9 +83,11 @@ export function TicketKanban({
   onOpen,
   onQuickCreate,
   onStatusChange,
+  onViewModeChange,
   selectedId,
   tickets,
-  users
+  users,
+  viewMode
 }: {
   globalFilter?: string
   onOpen: (ticketId: string) => void
@@ -96,14 +99,17 @@ export function TicketKanban({
     workType: WorkType
   }) => void
   onStatusChange: (ticketId: string, status: Status) => boolean | Promise<boolean>
+  onViewModeChange?: (mode: import("@/components/ticket-view-switcher").TicketViewMode) => void
   selectedId: string | null
   tickets: Ticket[]
   users: User[]
+  viewMode?: import("@/components/ticket-view-switcher").TicketViewMode
 }) {
   const [statusFilter, setStatusFilter] = useState<Status | null>(null)
   const [priorityFilter, setPriorityFilter] = useState<Priority | null>(null)
   const [ownerFilter, setOwnerFilter] = useState<string | null>(null)
   const [visibleStatuses, setVisibleStatuses] = useState<Set<Status>>(new Set(STATUSES))
+  const [showSubtasks, setShowSubtasks] = useState(false)
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null)
   const [savingTicketIds, setSavingTicketIds] = useState<Record<string, boolean>>({})
   const suppressOpenUntilRef = useRef(0)
@@ -117,7 +123,10 @@ export function TicketKanban({
   )
 
   const filteredTickets = useMemo(() => {
-    return tickets.filter((ticket) => {
+    const allTickets = showSubtasks
+      ? [...tickets, ...tickets.flatMap((t) => t.subtasks)]
+      : tickets
+    return allTickets.filter((ticket) => {
       if (statusFilter && ticket.status !== statusFilter) return false
       if (priorityFilter && ticket.priority !== priorityFilter) return false
       if (ownerFilter) {
@@ -141,7 +150,7 @@ export function TicketKanban({
       }
       return true
     })
-  }, [globalFilter, statusFilter, priorityFilter, ownerFilter, tickets])
+  }, [globalFilter, showSubtasks, statusFilter, priorityFilter, ownerFilter, tickets])
 
   const ticketsByStatus = useMemo(
     () => groupTicketsByStatus(filteredTickets),
@@ -320,7 +329,30 @@ export function TicketKanban({
   return (
     <div>
       {/* Toolbar */}
-      <div className="mx-auto mb-3 flex max-w-[1440px] items-center gap-2 px-3 sm:px-6 lg:px-8">
+      <div className="bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
+      <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 py-1.5 sm:px-6 lg:px-8">
+        {viewMode && onViewModeChange && (
+          <TicketViewSwitcher value={viewMode} onChange={onViewModeChange} />
+        )}
+        {/* Active filter chips (left) */}
+        {activeFilters.map((f) => (
+          <span
+            key={f.key}
+            className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 text-[12px] font-medium text-[var(--accent)]"
+          >
+            {f.label}
+            <button
+              type="button"
+              onClick={f.onClear}
+              aria-label={`Remove ${f.label} filter`}
+              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+            >
+              <X size={11} />
+            </button>
+          </span>
+        ))}
+
+        <div className="ml-auto flex items-center gap-2">
         {/* Filters */}
         <Popover
           panelClassName="w-[280px] p-3"
@@ -328,7 +360,7 @@ export function TicketKanban({
             <button
               type="button"
               className={cn(
-                "inline-flex h-[40px] items-center gap-1.5 rounded-xl border px-3 text-[13px] font-medium shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors",
+                "inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
                 activeFilters.length > 0
                   ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
                   : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
@@ -411,7 +443,7 @@ export function TicketKanban({
           trigger={
             <button
               type="button"
-              className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text-muted)] shadow-[0_1px_1px_rgba(0,0,0,0.02)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
             >
               <SlidersHorizontal size={13} />
               Columns
@@ -447,23 +479,40 @@ export function TicketKanban({
           )}
         </Popover>
 
-        {/* Active filter chips */}
-        {activeFilters.map((f) => (
+        {/* Show subtasks toggle */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showSubtasks}
+          onClick={() => setShowSubtasks((v) => !v)}
+          className={cn(
+            "inline-flex h-[30px] items-center gap-2 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
+            showSubtasks
+              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+              : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+          )}
+        >
+          <GitBranch size={12} />
+          Show subtasks
           <span
-            key={f.key}
-            className="inline-flex h-[40px] items-center gap-1.5 rounded-xl border border-[var(--accent)] bg-[var(--accent-soft)] px-3 text-[12px] font-medium text-[var(--accent)]"
+            aria-hidden
+            className={cn(
+              "relative inline-flex h-[14px] w-[24px] shrink-0 items-center rounded-full border transition-colors",
+              showSubtasks
+                ? "border-[var(--accent)] bg-[var(--accent)]"
+                : "border-[var(--border-strong)] bg-[var(--surface-3)]"
+            )}
           >
-            {f.label}
-            <button
-              type="button"
-              onClick={f.onClear}
-              aria-label={`Remove ${f.label} filter`}
-              className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
-            >
-              <X size={11} />
-            </button>
+            <span
+              className={cn(
+                "absolute h-[10px] w-[10px] rounded-full bg-[var(--surface)] shadow-sm transition-transform",
+                showSubtasks ? "translate-x-[12px]" : "translate-x-[1px]"
+              )}
+            />
           </span>
-        ))}
+        </button>
+        </div>
+      </div>
       </div>
 
       <DndContext
