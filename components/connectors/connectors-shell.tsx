@@ -27,21 +27,32 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
     didSyncRef.current = true
     setLoading(true)
 
+    async function resolveGitHubIdentity(supabase: ReturnType<typeof createSupabaseBrowserClient>) {
+      // Try up to 4 times with exponential back-off (250 → 500 → 1000 → 2000 ms).
+      // Supabase can take a moment to propagate the linked identity after the OAuth callback.
+      for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 250 * Math.pow(2, attempt - 1)))
+
+        const { data: refreshed } = await supabase.auth.refreshSession()
+        const identity = refreshed.user?.identities?.find(i => i.provider === "github")
+        if (identity) return identity
+      }
+      return null
+    }
+
     async function syncGitHub() {
       try {
         const supabase = createSupabaseBrowserClient()
-        let { data: { user: authUser } } = await supabase.auth.getUser()
+        const { data: { user: authUser } } = await supabase.auth.getUser()
         if (!authUser) throw new Error("Not authenticated")
 
         // After linkIdentity the browser session may not yet carry the GitHub
-        // identity — force a refresh so identities[] is up to date.
-        if (!authUser.identities?.find(i => i.provider === "github")) {
-          const { data: refreshed } = await supabase.auth.refreshSession()
-          if (refreshed.user) authUser = refreshed.user
-        }
+        // identity — retry with back-off until it appears.
+        const githubIdentity =
+          authUser.identities?.find(i => i.provider === "github") ??
+          await resolveGitHubIdentity(supabase)
 
-        const githubIdentity = authUser.identities?.find(i => i.provider === "github")
-        const identityData   = githubIdentity?.identity_data ?? {}
+        const identityData = githubIdentity?.identity_data ?? {}
 
         const githubUsername =
           (identityData["user_name"]          as string | undefined) ??
@@ -76,6 +87,7 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
         url.searchParams.delete("link")
         window.history.replaceState({}, "", url.toString())
       } catch (err) {
+        didSyncRef.current = false // allow retry on next render if user re-navigates
         setError(err instanceof Error ? err.message : "GitHub sync failed")
       } finally {
         setLoading(false)
