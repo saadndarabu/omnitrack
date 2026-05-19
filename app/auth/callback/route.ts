@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { dbConnectGitHub } from "@/lib/db/users"
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -33,15 +34,28 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=domain", request.url))
   }
 
-  // GitHub identity data is written client-side in ConnectorsShell after redirect,
-  // where the session is fully hydrated. The `next` and `link` params are preserved
-  // in the redirect URL for the shell to consume.
+  // If a GitHub identity was just linked, sync it to the DB row immediately.
+  // This is the single point all OAuth returns pass through, so the connector
+  // page can simply read the DB row — no client-side retry needed.
+  const githubIdentity = data.user.identities?.find(i => i.provider === "github")
+  if (githubIdentity) {
+    const d = githubIdentity.identity_data ?? {}
+    const githubUsername =
+      (d["user_name"]         as string | undefined) ??
+      (d["preferred_username"] as string | undefined) ??
+      (d["login"]             as string | undefined) ??
+      ""
+    const githubEmail = (d["email"] as string | undefined) ?? ""
+    if (githubUsername) {
+      try {
+        await dbConnectGitHub(supabase, data.user.id, githubUsername, githubEmail)
+      } catch (dbErr) {
+        console.error("[auth/callback] GitHub DB sync failed:", dbErr)
+        // Non-fatal — user lands on connectors page and can retry
+      }
+    }
+  }
+
   const safeNext = next.startsWith("/") ? next : "/dashboard"
-  const redirectUrl = new URL(safeNext, request.url)
-
-  // Forward link param so ConnectorsShell knows to sync GitHub identity
-  const link = requestUrl.searchParams.get("link")
-  if (link) redirectUrl.searchParams.set("link", link)
-
-  return NextResponse.redirect(redirectUrl)
+  return NextResponse.redirect(new URL(safeNext, request.url))
 }

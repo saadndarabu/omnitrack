@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useState } from "react"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { GitHubIcon } from "@/components/connectors/github-icon"
 import { Button } from "@/components/ui/button"
@@ -13,89 +12,6 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
   const [user,    setUser]    = useState(initialUser)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState<string | null>(null)
-  const searchParams          = useSearchParams()
-  const didSyncRef            = useRef(false)
-
-  // After GitHub OAuth redirect, link=github is present in the URL.
-  // The session is now fully established client-side, so we can safely
-  // read the GitHub identity and persist it.
-  useEffect(() => {
-    if (didSyncRef.current) return
-    if (searchParams.get("link") !== "github") return
-    if (user.githubUsername) return // already synced
-
-    didSyncRef.current = true
-    setLoading(true)
-
-    async function resolveGitHubIdentity(supabase: ReturnType<typeof createSupabaseBrowserClient>) {
-      // Try up to 4 times with exponential back-off (250 → 500 → 1000 → 2000 ms).
-      // Supabase can take a moment to propagate the linked identity after the OAuth callback.
-      for (let attempt = 0; attempt < 4; attempt++) {
-        if (attempt > 0) await new Promise(r => setTimeout(r, 250 * Math.pow(2, attempt - 1)))
-
-        const { data: refreshed } = await supabase.auth.refreshSession()
-        const identity = refreshed.user?.identities?.find(i => i.provider === "github")
-        if (identity) return identity
-      }
-      return null
-    }
-
-    async function syncGitHub() {
-      try {
-        const supabase = createSupabaseBrowserClient()
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (!authUser) throw new Error("Not authenticated")
-
-        // After linkIdentity the browser session may not yet carry the GitHub
-        // identity — retry with back-off until it appears.
-        const githubIdentity =
-          authUser.identities?.find(i => i.provider === "github") ??
-          await resolveGitHubIdentity(supabase)
-
-        const identityData = githubIdentity?.identity_data ?? {}
-
-        const githubUsername =
-          (identityData["user_name"]          as string | undefined) ??
-          (identityData["preferred_username"]  as string | undefined) ??
-          (identityData["login"]               as string | undefined) ??
-          ""
-        const githubEmail =
-          (identityData["email"] as string | undefined) ?? ""
-
-        if (!githubUsername) throw new Error("Could not read GitHub username from session")
-
-        const res = await fetch("/api/users/me/github", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ github_username: githubUsername, github_email: githubEmail }),
-        })
-
-        if (!res.ok) {
-          const data = await res.json() as { error?: string }
-          throw new Error(data.error ?? "Failed to save GitHub connection")
-        }
-
-        setUser(prev => ({
-          ...prev,
-          githubUsername,
-          githubEmail,
-          githubConnectedAt: new Date().toISOString(),
-        }))
-
-        // Clean link param from URL without reload
-        const url = new URL(window.location.href)
-        url.searchParams.delete("link")
-        window.history.replaceState({}, "", url.toString())
-      } catch (err) {
-        didSyncRef.current = false // allow retry on next render if user re-navigates
-        setError(err instanceof Error ? err.message : "GitHub sync failed")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    syncGitHub()
-  }, [searchParams, user.githubUsername])
 
   const connected = !!user.githubUsername
 
