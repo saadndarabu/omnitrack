@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Bug, CheckCircle2, CheckSquare, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles, Square, TriangleAlert } from "lucide-react"
+import { Bug, CheckCircle2, CheckSquare, ChevronDown, GitBranch, Layers, Paperclip, Rocket, Sparkles, Square, TriangleAlert } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { Tag } from "@/components/tag"
 import { relTime } from "@/lib/rel-time"
@@ -26,30 +26,30 @@ const priorityLabels: Record<Priority, string> = {
 // Medium uses --status-review (purple/violet). Low is muted.
 const priorityPill: Record<Priority, string> = {
   critical:
-    "border-[color-mix(in_srgb,var(--status-blocked)_50%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_16%,transparent)] text-[var(--status-blocked)] font-bold",
+    "border-[color-mix(in_srgb,var(--status-blocked)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_8%,transparent)] text-[var(--status-blocked)]",
   high:
-    "border-[color-mix(in_srgb,var(--status-high)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-high)_12%,transparent)] text-[color-mix(in_srgb,var(--status-high)_90%,var(--text))]",
+    "border-[color-mix(in_srgb,var(--status-high)_28%,transparent)] bg-[color-mix(in_srgb,var(--status-high)_8%,transparent)] text-[var(--status-high)]",
   medium:
-    "border-[color-mix(in_srgb,var(--status-review)_32%,transparent)] bg-[color-mix(in_srgb,var(--status-review)_11%,transparent)] text-[color-mix(in_srgb,var(--status-review)_88%,var(--text))]",
+    "border-[var(--border-strong)] bg-[var(--surface-2)] text-[var(--text-muted)]",
   low:
-    "border-[color-mix(in_srgb,var(--text-faint)_30%,transparent)] bg-[color-mix(in_srgb,var(--text-faint)_10%,transparent)] text-[var(--text-muted)]"
+    "border-[var(--border)] bg-transparent text-[var(--text-faint)]"
 }
 
-// Status chip styles — same shape as priority chip
 const statusChip: Record<Status, string> = {
-  backlog:     "border-[color-mix(in_srgb,var(--text-faint)_30%,transparent)] bg-[color-mix(in_srgb,var(--text-faint)_10%,transparent)] text-[var(--text-faint)]",
-  todo:        "border-[color-mix(in_srgb,var(--status-todo)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-todo)_10%,transparent)] text-[var(--text-muted)]",
-  in_progress: "border-[color-mix(in_srgb,var(--status-progress)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-progress)_12%,transparent)] text-[color-mix(in_srgb,var(--status-progress)_90%,var(--text))]",
-  in_review:   "border-[color-mix(in_srgb,var(--status-review)_36%,transparent)] bg-[color-mix(in_srgb,var(--status-review)_10%,transparent)] text-[color-mix(in_srgb,var(--status-review)_88%,var(--text))]",
-  blocked:     "border-[color-mix(in_srgb,var(--status-blocked)_40%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_12%,transparent)] text-[var(--status-blocked)]",
-  done:        "border-[color-mix(in_srgb,var(--status-done)_36%,transparent)] bg-[color-mix(in_srgb,var(--status-done)_10%,transparent)] text-[color-mix(in_srgb,var(--status-done)_88%,var(--text))]",
+  backlog:     "border-[var(--border)] bg-transparent text-[var(--text-faint)]",
+  todo:        "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)]",
+  in_progress: "border-[color-mix(in_srgb,var(--status-progress)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-progress)_8%,transparent)] text-[var(--status-progress)]",
+  in_review:   "border-[color-mix(in_srgb,var(--status-review)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-review)_8%,transparent)] text-[var(--status-review)]",
+  blocked:     "border-[color-mix(in_srgb,var(--status-blocked)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_8%,transparent)] text-[var(--status-blocked)]",
+  done:        "border-[color-mix(in_srgb,var(--status-done)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-done)_8%,transparent)] text-[var(--status-done)]",
 }
 
 const workTypeLabels: Record<WorkType, string> = {
-  feature: "Feature",
+  feature:     "Feature",
   enhancement: "Enhancement",
-  bug: "Bug",
-  task: "Task"
+  bug:         "Bug",
+  task:        "Task",
+  epic:        "Epic"
 }
 
 const priorityRank: Record<Priority, number> = {
@@ -96,7 +96,7 @@ export function StatusCell({ status }: { status: Status }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] w-[88px] items-center justify-center rounded-md border text-[11px] font-semibold leading-none tracking-wide",
+        "inline-flex h-[20px] w-[88px] items-center justify-center rounded-[4px] border text-[11px] font-medium leading-none",
         statusChip[status]
       )}
     >
@@ -109,7 +109,7 @@ export function PriorityCell({ priority }: { priority: Priority }) {
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] w-[88px] items-center justify-center rounded-md border text-[11px] leading-none tracking-wide",
+        "inline-flex h-[20px] w-[80px] items-center justify-center rounded-[4px] border text-[11px] font-medium leading-none",
         priorityPill[priority]
       )}
     >
@@ -120,29 +120,25 @@ export function PriorityCell({ priority }: { priority: Priority }) {
 
 export function WorkTypeCell({ workType }: { workType: WorkType }) {
   const Icon =
-    workType === "bug"
-      ? Bug
-      : workType === "task"
-        ? CheckCircle2
-        : workType === "enhancement"
-          ? Sparkles
-          : Rocket
+    workType === "bug"         ? Bug
+    : workType === "task"      ? CheckCircle2
+    : workType === "enhancement" ? Sparkles
+    : workType === "epic"      ? Layers
+    : Rocket
   const cls =
-    workType === "bug"
-      ? "text-[var(--status-blocked)]"
-      : workType === "task"
-        ? "text-[var(--status-review)]"
-        : workType === "enhancement"
-          ? "text-[var(--status-progress)]"
-          : "text-[var(--accent)]"
+    workType === "bug"         ? "text-[var(--status-blocked)]"
+    : workType === "task"      ? "text-[var(--text-muted)]"
+    : workType === "enhancement" ? "text-[var(--status-progress)]"
+    : workType === "epic"      ? "text-[var(--status-review)]"
+    : "text-[var(--text-muted)]"
 
   return (
     <span
       title={workTypeLabels[workType]}
       aria-label={workTypeLabels[workType]}
-      className="inline-flex h-6 w-6 items-center justify-center rounded-md border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_44%,transparent)]"
+      className="inline-flex h-5 w-5 items-center justify-center rounded-[4px] border border-[var(--border)] bg-[var(--surface-2)]"
     >
-      <Icon size={14} className={cls} />
+      <Icon size={12} className={cls} strokeWidth={2} />
     </span>
   )
 }
@@ -179,7 +175,7 @@ export function TitleCell({
 
   return (
     <span className="flex min-w-0 items-center gap-1.5">
-      <span className="block truncate text-[13px] font-semibold text-[var(--text)]">
+      <span className="block truncate text-[13px] font-medium text-[var(--text)]">
         {ticket.title}
       </span>
       {subtaskCtx?.showSubtasks && hasSubtasks ? (
@@ -189,12 +185,12 @@ export function TitleCell({
             e.stopPropagation()
             subtaskCtx.onToggleExpand(ticket.id)
           }}
-          title={isExpanded ? "Collapse subtasks" : `${ticket.subtasks.length} subtask${ticket.subtasks.length === 1 ? "" : "s"}`}
+          title={isExpanded ? "Collapse children" : `${ticket.subtasks.length} child ticket${ticket.subtasks.length === 1 ? "" : "s"}`}
           className={cn(
-            "inline-flex shrink-0 items-center gap-0.5 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold transition-colors",
+            "inline-flex shrink-0 items-center gap-0.5 rounded-[4px] border px-1.5 py-0.5 text-[10px] font-medium transition-colors",
             isExpanded
-              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
-              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
+              ? "border-[var(--border-strong)] bg-[var(--surface-2)] text-[var(--text)]"
+              : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-faint)] hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]"
           )}
         >
           <GitBranch size={9} />
@@ -215,10 +211,9 @@ function ColoredTag({ label }: { label: string }) {
     <span
       style={{
         borderColor: slot.border,
-        backgroundColor: slot.bg,
         color: slot.text,
       }}
-      className="inline-flex h-[20px] items-center rounded border-[0.5px] px-1.5 font-mono text-[10.5px] font-medium tracking-wide"
+      className="inline-flex h-[18px] items-center rounded-[4px] border bg-transparent px-1.5 text-[10.5px] font-medium"
     >
       {label.toLowerCase()}
     </span>

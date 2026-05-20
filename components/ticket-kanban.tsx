@@ -493,7 +493,7 @@ export function TicketKanban({
           )}
         >
           <GitBranch size={12} />
-          Show subtasks
+          Show children
           <span
             aria-hidden
             className={cn(

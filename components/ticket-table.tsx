@@ -221,31 +221,29 @@ export function TicketTable({
   return (
     <div>
       {/* Subheader: view switcher left, controls right */}
-      <div className="bg-[color-mix(in_srgb,var(--bg)_98%,transparent)]">
-        <div className="mx-auto flex w-full max-w-[1440px] items-center gap-3 px-3 sm:px-6 lg:px-8">
-          <div className="py-1.5">
-            <TicketViewSwitcher value={viewMode} onChange={onViewModeChange ?? (() => {})} />
-          </div>
+      <div>
+        <div className="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-2 px-3 py-3 sm:px-6 lg:px-8">
+          <TicketViewSwitcher value={viewMode} onChange={onViewModeChange ?? (() => {})} />
 
           {/* Active filter chips */}
           {activeFilters.map((filter) => (
             <span
               key={filter.key}
-              className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-2.5 text-[12px] font-medium text-[var(--accent)]"
+              className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border-strong)] bg-[var(--surface)] px-2 text-[12px] font-medium"
             >
-              {filter.label}
+              <span className="text-[var(--text-muted)]">{filter.label}</span>
               <button
                 type="button"
                 onClick={filter.onClear}
                 aria-label={`Remove ${filter.label} filter`}
-                className="rounded p-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
+                className="-mr-0.5 rounded p-0.5 text-[var(--text-faint)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
               >
                 <X size={11} />
               </button>
             </span>
           ))}
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5">
           {/* Filters */}
         <Popover
           panelClassName="w-[280px] p-3"
@@ -253,16 +251,16 @@ export function TicketTable({
             <button
               type="button"
               className={cn(
-                "inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
+                "inline-flex h-7 items-center gap-1.5 rounded-[6px] border px-2.5 text-[12px] font-medium transition-colors",
                 activeFilters.length > 0
-                  ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+                  ? "border-[var(--border-strong)] bg-[var(--surface-2)] text-[var(--text)]"
                   : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
               )}
             >
-              <SlidersHorizontal size={13} />
+              <SlidersHorizontal size={12} />
               Filters
               {activeFilters.length > 0 ? (
-                <span className="flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-[var(--accent)] px-1 text-[10px] font-semibold text-white">
+                <span className="flex h-[16px] min-w-[16px] items-center justify-center rounded-[4px] bg-[var(--text)] px-1 text-[10px] font-semibold text-[var(--bg)]">
                   {activeFilters.length}
                 </span>
               ) : null}
@@ -359,7 +357,7 @@ export function TicketTable({
                 <button
                   type="button"
                   onClick={() => { table.resetColumnFilters(); close() }}
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] py-1.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                  className="mt-1 inline-flex h-7 w-full items-center justify-center rounded-[6px] border border-[var(--border)] text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                 >
                   Clear all filters
                 </button>
@@ -375,9 +373,9 @@ export function TicketTable({
           trigger={
             <button
               type="button"
-              className="inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              className="inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
             >
-              <SlidersHorizontal size={13} />
+              <SlidersHorizontal size={12} />
               Columns
               <span className="text-[11px] text-[var(--text-faint)]">{visibleColumnCount}</span>
             </button>
@@ -393,10 +391,10 @@ export function TicketTable({
                     key={column.id}
                     type="button"
                     onClick={() => column.toggleVisibility(!checked)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                    className="flex w-full items-center justify-between rounded-[4px] px-2 py-1.5 text-left text-[12px] text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
                   >
                     <span>{label}</span>
-                    {checked ? <Check size={13} className="text-[var(--accent)]" /> : null}
+                    {checked ? <Check size={13} className="text-[var(--text)]" /> : null}
                   </button>
                 )
               })}
@@ -414,28 +412,25 @@ export function TicketTable({
             if (showSubtasks) setExpandedIds(new Set())
           }}
           className={cn(
-            "inline-flex h-[30px] items-center gap-2 rounded-lg border px-2.5 text-[12px] font-medium transition-colors",
+            "inline-flex h-7 items-center gap-2 rounded-[6px] border px-2.5 text-[12px] font-medium transition-colors",
             showSubtasks
-              ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]"
+              ? "border-[var(--border-strong)] bg-[var(--surface-2)] text-[var(--text)]"
               : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
           )}
         >
           <GitBranch size={12} />
-          Show subtasks
-          {/* pill toggle track */}
+          <span>Children</span>
           <span
             aria-hidden
             className={cn(
-              "relative inline-flex h-[14px] w-[24px] shrink-0 items-center rounded-full border transition-colors",
-              showSubtasks
-                ? "border-[var(--accent)] bg-[var(--accent)]"
-                : "border-[var(--border-strong)] bg-[var(--surface-3)]"
+              "relative inline-flex h-[12px] w-[22px] shrink-0 items-center rounded-full transition-colors",
+              showSubtasks ? "bg-[var(--text)]" : "bg-[var(--surface-3)] border border-[var(--border-strong)]"
             )}
           >
             <span
               className={cn(
-                "absolute h-[10px] w-[10px] rounded-full bg-[var(--surface)] shadow-sm transition-transform",
-                showSubtasks ? "translate-x-[12px]" : "translate-x-[1px]"
+                "absolute h-[8px] w-[8px] rounded-full bg-[var(--surface)] transition-transform",
+                showSubtasks ? "translate-x-[12px]" : "translate-x-[2px]"
               )}
             />
           </span>
@@ -445,10 +440,10 @@ export function TicketTable({
       </div>
 
       {/* Table shell */}
-      <div className="px-3 pt-5 sm:px-6 lg:px-8">
+      <div className="px-3 pb-6 sm:px-6 lg:px-8">
       <DndContext id="ticket-table-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleColumnDragEnd}>
         <div
-          className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--surface)] shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_rgba(16,24,40,0.04)]"
+          className="overflow-hidden rounded-[8px] border border-[var(--border)] bg-[var(--surface)]"
         >
           <div className="max-h-[calc(100vh-220px)] overflow-auto">
             <table className="w-full border-separate border-spacing-0">
@@ -486,19 +481,16 @@ export function TicketTable({
                         className={cn(
                           "group cursor-pointer transition-colors duration-[120ms] ease-out",
                           isCurrent
-                            ? "bg-[var(--accent-soft)] shadow-[inset_3px_0_0_var(--accent)]"
+                            ? "bg-[var(--surface-2)] shadow-[inset_2px_0_0_var(--text)]"
                             : isSelected
-                              ? "bg-[var(--accent-soft)]"
+                              ? "bg-[var(--surface-2)]"
                               : "hover:bg-[var(--surface-2)]"
                         )}
                       >
-                        {row.getVisibleCells().map((cell, cellIndex) => (
+                        {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
-                            className={cn(
-                              "h-[58px] border-b border-[var(--border)] px-4 align-middle text-[13px] text-[var(--text-muted)] last:border-r-0",
-                              cellIndex === 2 ? "border-r border-[var(--border)]" : ""
-                            )}
+                            className="h-[48px] border-b border-[var(--border)] px-3 align-middle text-[13px] text-[var(--text-muted)]"
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
@@ -506,22 +498,22 @@ export function TicketTable({
                       </tr>
                     )
 
-                    const subtaskRows =
+                    const childRows =
                       showSubtasks &&
                       expandedIds.has(row.original.id) &&
                       row.original.subtasks.length > 0
-                        ? row.original.subtasks.map((subtask, si) => (
+                        ? row.original.subtasks.map((child, ci) => (
                             <SubtaskTableRow
-                              key={subtask.id}
-                              subtask={subtask}
+                              key={child.id}
+                              subtask={child}
                               visibleColumns={table.getVisibleLeafColumns()}
-                              isLast={si === row.original.subtasks.length - 1}
+                              isLast={ci === row.original.subtasks.length - 1}
                               onOpen={onOpen}
                             />
                           ))
                         : []
 
-                    return [parentRow, ...subtaskRows]
+                    return [parentRow, ...childRows]
                   })
                 )}
               </tbody>
@@ -529,7 +521,7 @@ export function TicketTable({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 text-[11px] text-[var(--text-faint)]">
+          <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2 text-[11.5px] text-[var(--text-faint)]">
             <span>
               {totalFiltered === 0
                 ? "0 tickets"
@@ -588,17 +580,14 @@ function SubtaskTableRow({
       data-ticket-id={subtask.id}
       className="group cursor-pointer bg-[var(--surface-2)] transition-colors duration-[120ms] ease-out hover:bg-[var(--surface-3)]"
     >
-      {visibleColumns.map((col, cellIndex) => {
+      {visibleColumns.map((col) => {
         const isTitle = col.id === "title"
-        const isBorderRight = cellIndex === 2
         return (
           <td
             key={col.id}
             className={cn(
-              "align-middle px-4 text-[12px] text-[var(--text-muted)]",
-              isLast ? "border-b-2 border-[var(--border-strong)]" : "border-b border-[var(--border)]",
-              isBorderRight ? "border-r border-[var(--border)]" : "",
-              isTitle ? "h-[48px]" : "h-[48px]"
+              "h-[40px] align-middle px-3 text-[12px] text-[var(--text-muted)]",
+              isLast ? "border-b border-[var(--border-strong)]" : "border-b border-[var(--border)]"
             )}
           >
             {isTitle ? (
@@ -640,7 +629,7 @@ function DraggableHeader({ header }: { header: import("@tanstack/react-table").H
       scope="col"
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className={cn(
-        "border-b border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-left text-[11px] font-[600] tracking-[0.03em] text-[var(--text-faint)] last:border-r-0",
+        "border-b border-[var(--border)] bg-[var(--surface-2)] px-3 py-2.5 text-left text-[11px] font-semibold tracking-[0.04em] uppercase text-[var(--text-faint)]",
         meta?.width
       )}
     >
@@ -691,7 +680,7 @@ function FilterList({
             type="button"
             onClick={() => onSelect(item.value)}
             className={cn(
-              "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12px] transition-colors",
+              "flex w-full items-center gap-2 rounded-[4px] px-2 py-1.5 text-left text-[12px] transition-colors",
               active
                 ? "bg-[var(--surface-2)] text-[var(--text)]"
                 : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
@@ -699,7 +688,7 @@ function FilterList({
           >
             {item.leading ? <span className="shrink-0">{item.leading}</span> : null}
             <span className="flex-1 truncate">{item.label}</span>
-            {active ? <Check size={13} className="text-[var(--accent)]" /> : null}
+            {active ? <Check size={13} className="text-[var(--text)]" /> : null}
           </button>
         )
       })}

@@ -6,7 +6,7 @@ import type { TicketSummary } from "@/lib/dashboard/dashboard-types"
 
 const PRIORITY_DOT: Record<string, string> = {
   critical: "var(--status-blocked)",
-  high:     "var(--status-progress)",
+  high:     "var(--status-high)",
   medium:   "var(--status-review)",
   low:      "var(--text-faint)",
 }
@@ -40,8 +40,8 @@ function TicketRow({ ticket }: { ticket: TicketSummary }) {
         style={{ background: PRIORITY_DOT[ticket.priority] ?? "var(--text-faint)" }}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13px] font-medium text-[var(--text)]">{ticket.title}</p>
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[var(--text-faint)]">
+        <p className="truncate text-[13px] font-medium leading-snug text-[var(--text)]">{ticket.title}</p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] text-[var(--text-faint)]">
           <span className="font-mono">{ticket.id}</span>
           <span style={{ color: STATUS_COLOR[ticket.status] ?? "var(--text-faint)" }}>
             {STATUS_LABELS[ticket.status] ?? ticket.status}
@@ -73,8 +73,8 @@ export function TicketListCard({
   className?: string
 }) {
   return (
-    <div className={cn("rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] p-5", className)}>
-      <h3 className="mb-1 text-[13px] font-semibold text-[var(--text)]">{title}</h3>
+    <div className={cn("rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4", className)}>
+      <h3 className="mb-2 text-[12px] font-semibold tracking-[0.02em] text-[var(--text-muted)] uppercase">{title}</h3>
       {tickets.length === 0 ? (
         <p className="py-6 text-center text-[12px] text-[var(--text-faint)]">{emptyMessage}</p>
       ) : (

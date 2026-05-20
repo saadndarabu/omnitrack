@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import { dbGetTickets, dbCreateTicket, dbNextTicketId, dbGetTicketById } from "@/lib/db/tickets"
+import { dbGetTickets, dbCreateTicket, dbNextTicketId, dbGetTicketById, dbUpdateTicket } from "@/lib/db/tickets"
 import type { TicketFilters, TicketSortField, SortDirection } from "@/lib/db/tickets"
 import type { Status } from "@/lib/status"
 import type { Ticket } from "@/types/ticket"
@@ -66,21 +66,29 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Parent ticket not found" }, { status: 422 })
       }
 
-      // No nesting beyond one level
-      if (parent.parentId) {
+      // Epics cannot be children of another ticket
+      if (parent.workType === "epic" && parent.parentId) {
         return NextResponse.json(
-          { error: "Subtasks cannot have their own subtasks" },
+          { error: "Children cannot be nested under another child ticket" },
           { status: 422 }
         )
       }
 
-      // Subtask due date must not exceed parent due date
-      if (body.dueDate && parent.dueDate && body.dueDate > parent.dueDate) {
+      // Children cannot be epics
+      if (parent.parentId) {
         return NextResponse.json(
-          { error: `Subtask due date cannot exceed parent due date (${parent.dueDate})` },
+          { error: "Child tickets cannot have their own children" },
           { status: 422 }
         )
       }
+    }
+
+    // A ticket being assigned as a child must not itself be an epic
+    if (parentId && body.workType === "epic") {
+      return NextResponse.json(
+        { error: "Epic tickets cannot be children of another ticket" },
+        { status: 422 }
+      )
     }
 
     const id = await dbNextTicketId(db)
@@ -102,6 +110,14 @@ export async function POST(request: Request) {
       assigneeId:          body.assigneeId ?? null,
       parentId
     })
+
+    // Auto-promote parent to epic when it gets its first child
+    if (parentId) {
+      const parent = await dbGetTicketById(db, parentId)
+      if (parent && parent.workType !== "epic") {
+        await dbUpdateTicket(db, parentId, { workType: "epic" })
+      }
+    }
 
     return NextResponse.json(ticket, { status: 201 })
   } catch (err) {

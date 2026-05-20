@@ -14,24 +14,24 @@ import type { DashboardData, DashboardRange, DashboardScope } from "@/lib/dashbo
 
 function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={`animate-pulse rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] p-5 ${className ?? ""}`}>
-      <div className="mb-3 h-3 w-2/5 rounded-md bg-[var(--surface-3)]" />
-      <div className="mb-2 h-8 w-1/3 rounded-md bg-[var(--surface-3)]" />
-      <div className="h-3 w-1/4 rounded-md bg-[var(--surface-2)]" />
+    <div className={`animate-pulse rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-4 py-3.5 ${className ?? ""}`}>
+      <div className="mb-3 h-2.5 w-2/5 rounded bg-[var(--surface-3)]" />
+      <div className="mb-2 h-7 w-1/3 rounded bg-[var(--surface-3)]" />
+      <div className="h-2.5 w-1/4 rounded bg-[var(--surface-2)]" />
     </div>
   )
 }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] py-20 text-center">
-      <p className="mb-1 text-[15px] font-medium text-[var(--text)]">No dashboard data yet.</p>
-      <p className="mb-5 text-[13px] text-[var(--text-faint)]">
+    <div className="flex flex-col items-center justify-center rounded-[8px] border border-dashed border-[var(--border-strong)] bg-[var(--surface)] py-20 text-center">
+      <p className="mb-1.5 text-[14px] font-semibold text-[var(--text)]">No dashboard data yet</p>
+      <p className="mb-5 max-w-[360px] text-[13px] text-[var(--text-muted)]">
         Create your first ticket to start seeing workload, blockers, and progress insights.
       </p>
       <a
         href="/tickets"
-        className="rounded border border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] px-4 py-2 text-[13px] font-medium text-[var(--accent)] transition-colors hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)]"
+        className="inline-flex h-8 items-center rounded-[6px] border border-[var(--text)] bg-[var(--text)] px-3 text-[13px] font-medium text-[var(--bg)] transition-colors hover:bg-[#000] hover:border-[#000]"
       >
         New ticket
       </a>
@@ -70,7 +70,7 @@ export function DashboardShell() {
   const handleRefresh     = () => load(scope, range)
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] px-6 py-6 md:px-8">
+    <div className="min-h-screen bg-[var(--bg)] px-6 py-8 md:px-8">
       <DashboardHeader
         scope={scope}
         range={range}
@@ -82,7 +82,7 @@ export function DashboardShell() {
       />
 
       {error && (
-        <div className="mb-6 rounded-[12px] border-[0.5px] border-[color-mix(in_srgb,var(--status-blocked)_30%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_8%,transparent)] px-4 py-3 text-[13px] text-[var(--status-blocked)]">
+        <div className="mb-6 rounded-[8px] border border-[color-mix(in_srgb,var(--status-blocked)_24%,var(--border))] bg-[color-mix(in_srgb,var(--status-blocked)_5%,var(--surface))] px-3.5 py-2.5 text-[13px] text-[var(--status-blocked)]">
           {error}
         </div>
       )}

@@ -17,7 +17,7 @@ export default async function ProfilePage() {
   return (
     <div className="flex min-h-screen">
       <SidebarWrapper current="Profile" githubConnected={!!user.githubUsername} />
-      <main className="flex-1 pl-[76px] md:pl-[232px]">
+      <main className="flex-1 pl-[64px] md:pl-[224px]">
         <ProfileShell user={user} />
       </main>
     </div>

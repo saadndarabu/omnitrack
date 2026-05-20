@@ -2,66 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Design tokens — a restrained, professional surface palette.
+  Aim: feel like Linear / Stripe / Vercel. Calm, neutral, near-mono with
+  a single muted accent. Status colors are tuned for elegance, not loudness.
+*/
+
 :root {
   color-scheme: light;
-  --bg: #F7F6F3;
+
+  /* Surfaces — warm-neutral, two narrow steps */
+  --bg: #FBFBFA;
   --surface: #FFFFFF;
-  --surface-2: #F1F0EC;
-  --surface-3: #E8E6E0;
-  --border: #E3E0D8;
-  --border-strong: #C8C4BA;
-  --text: #1F2328;
-  --text-muted: #6B7280;
-  --text-faint: #9CA3AF;
-  --accent: #6D4AFF;
-  --accent-soft: #EEE9FF;
-  --accent-strong: #5538E0;
-  --status-todo: #9CA3AF;
-  --status-progress: #B45309;
-  --status-high: #C2610A;
-  --status-review: #6D28D9;
-  --status-done: #16803C;
-  --status-blocked: #BE123C;
-  /* Label palette — 8 stable hues for hash-based coloring */
-  --label-0: #6D4AFF;
-  --label-1: #0284C7;
-  --label-2: #059669;
-  --label-3: #D97706;
-  --label-4: #DB2777;
-  --label-5: #7C3AED;
-  --label-6: #0891B2;
-  --label-7: #65A30D;
+  --surface-2: #F5F4F1;
+  --surface-3: #ECEAE5;
+
+  /* Borders — soft hairlines */
+  --border: #E7E5DE;
+  --border-strong: #D5D2C8;
+
+  /* Text — strong primary, restrained muted */
+  --text: #1A1A19;
+  --text-muted: #5C5C58;
+  --text-faint: #8A8A85;
+
+  /* Accent — muted indigo. Used sparingly. */
+  --accent: #4F46E5;
+  --accent-soft: #EEF0FE;
+  --accent-strong: #4338CA;
+
+  /* Status — desaturated, readable */
+  --status-todo: #8A8A85;
+  --status-progress: #9A6B16;
+  --status-high: #A05A12;
+  --status-review: #5B4FCF;
+  --status-done: #137A4A;
+  --status-blocked: #B0322E;
+
+  /* Label palette — 8 stable hues */
+  --label-0: #4F46E5;
+  --label-1: #0369A1;
+  --label-2: #0F766E;
+  --label-3: #B45309;
+  --label-4: #BE185D;
+  --label-5: #6D28D9;
+  --label-6: #0E7490;
+  --label-7: #4D7C0F;
+
+  /* Radii — restrained scale */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  /* Shadows — minimal */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 14px rgba(16, 24, 40, 0.06);
+  --shadow-lg: 0 12px 28px rgba(16, 24, 40, 0.08);
 }
 
 html.dark {
   color-scheme: dark;
-  --bg: #0d1515;
-  --surface: #151d1e;
-  --surface-2: #192122;
-  --surface-3: #232b2c;
+  --bg: #0E0F11;
+  --surface: #15171A;
+  --surface-2: #1A1C1F;
+  --surface-3: #22252A;
   --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(0, 242, 255, 0.20);
-  --text: #dce4e4;
-  --text-muted: #b9cacb;
-  --text-faint: #849495;
-  --accent: #8b5cf6;
-  --accent-soft: rgba(139, 92, 246, 0.12);
-  --accent-strong: #7c3aed;
-  --status-todo: #849495;
-  --status-progress: #e8c423;
-  --status-high: #f59e0b;
-  --status-review: #d3bbff;
-  --status-done: #63D68A;
-  --status-blocked: #F06F82;
-  /* Label palette — dark theme variants */
-  --label-0: #8b5cf6;
-  --label-1: #38bdf8;
-  --label-2: #34d399;
-  --label-3: #fbbf24;
-  --label-4: #f472b6;
-  --label-5: #a78bfa;
-  --label-6: #22d3ee;
-  --label-7: #a3e635;
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #E7E7E5;
+  --text-muted: #A8A8A3;
+  --text-faint: #76766F;
+  --accent: #8A85F2;
+  --accent-soft: rgba(138, 133, 242, 0.14);
+  --accent-strong: #7872E8;
+  --status-todo: #76766F;
+  --status-progress: #D4A341;
+  --status-high: #D38B3E;
+  --status-review: #9F95F0;
+  --status-done: #5DB783;
+  --status-blocked: #E07C7C;
+  --label-0: #8A85F2;
+  --label-1: #5BBAD6;
+  --label-2: #5DC495;
+  --label-3: #E3B664;
+  --label-4: #E589B4;
+  --label-5: #A78BFA;
+  --label-6: #5FC9D9;
+  --label-7: #B4D67A;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -77,30 +107,35 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans), sans-serif;
-  font-size: 14px;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 13.5px;
   font-weight: 400;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
 }
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+  color: inherit;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .focus-input {
-  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 38%, transparent);
   outline-offset: 1px;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -108,12 +143,12 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--text-faint) 30%, transparent);
+  background: color-mix(in srgb, var(--text-faint) 24%, transparent);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--text-faint) 55%, transparent);
+  background: color-mix(in srgb, var(--text-faint) 45%, transparent);
 }
 
 ::-webkit-scrollbar-corner {

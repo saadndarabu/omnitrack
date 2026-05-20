@@ -18,8 +18,7 @@ export function TicketViewSwitcher({
   onChange: (value: TicketViewMode) => void
 }) {
   return (
-    <div className="flex items-center gap-0.5">
-      <span className="mr-1.5 text-[11px] font-medium text-[var(--text-faint)]">View as</span>
+    <div className="inline-flex h-7 items-center rounded-[6px] border border-[var(--border)] bg-[var(--surface)] p-[2px]">
       {VIEWS.map((view) => {
         const Icon = view.icon
         const active = value === view.id
@@ -28,11 +27,12 @@ export function TicketViewSwitcher({
             key={view.id}
             type="button"
             onClick={() => onChange(view.id)}
+            aria-pressed={active}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md px-2 py-1 text-[12px] font-medium transition-colors",
+              "inline-flex h-[22px] items-center gap-1.5 rounded-[4px] px-2 text-[12px] font-medium transition-colors",
               active
-                ? "bg-[var(--surface-2)] text-[var(--text)] shadow-[inset_0_0_0_0.5px_var(--border-strong)]"
-                : "text-[var(--text-faint)] hover:text-[var(--text-muted)]"
+                ? "bg-[var(--surface-2)] text-[var(--text)]"
+                : "text-[var(--text-muted)] hover:text-[var(--text)]"
             )}
           >
             <Icon size={12} />

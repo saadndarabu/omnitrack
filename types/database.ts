@@ -5,7 +5,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRoleDb   = "admin" | "member" | "viewer"
 export type UserAreaDb   = "frontend" | "backend" | "automation" | "agents" | "sara" | "omnimap" | "llm" | "devops" | "rag"
 
-export type WorkTypeDb   = "feature" | "enhancement" | "bug" | "task"
+export type WorkTypeDb   = "feature" | "enhancement" | "bug" | "task" | "epic"
 export type StatusDb     = "backlog" | "todo" | "in_progress" | "in_review" | "done" | "blocked"
 export type PriorityDb   = "critical" | "high" | "medium" | "low"
 export type ProjectDb    = "sara" | "omniscan" | "platform"

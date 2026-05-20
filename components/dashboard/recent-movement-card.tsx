@@ -30,8 +30,8 @@ export function RecentMovementCard({
   className?: string
 }) {
   return (
-    <div className={cn("rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] p-5", className)}>
-      <h3 className="mb-1 text-[13px] font-semibold text-[var(--text)]">Recent Movement</h3>
+    <div className={cn("rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4", className)}>
+      <h3 className="mb-3 text-[12px] font-semibold tracking-[0.02em] text-[var(--text-muted)] uppercase">Recent Movement</h3>
       {tickets.length === 0 ? (
         <p className="py-6 text-center text-[12px] text-[var(--text-faint)]">No recent activity.</p>
       ) : (

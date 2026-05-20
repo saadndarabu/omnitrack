@@ -7,7 +7,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
       <input
         ref={ref}
         className={cn(
-          "h-8 w-full rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface)] px-3 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none",
+          "h-8 w-full rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--border-strong))] focus:bg-[var(--surface)] focus-visible:outline-none disabled:opacity-50",
           className
         )}
         {...props}
@@ -23,7 +23,7 @@ export function Textarea({
   return (
     <textarea
       className={cn(
-        "min-h-24 w-full resize-none rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[13px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus-visible:focus-input focus-visible:outline-none",
+        "min-h-24 w-full resize-none rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 py-2 text-[13px] leading-relaxed text-[var(--text)] placeholder:text-[var(--text-faint)] transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--border-strong))] focus-visible:outline-none disabled:opacity-50",
         className
       )}
       {...props}

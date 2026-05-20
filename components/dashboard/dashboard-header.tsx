@@ -28,31 +28,31 @@ export function DashboardHeader({
     : null
 
   return (
-    <div className="mb-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] font-semibold leading-tight text-[var(--text)]">Dashboard</h1>
-          <p className="mt-1 text-[13px] text-[var(--text-faint)]">
-            Your engineering command center for focus, blockers, and delivery health.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ScopeToggle scope={scope} onChange={onScopeChange} />
-          <DateRangeToggle range={range} onChange={onRangeChange} />
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            aria-label="Refresh dashboard"
-            className={cn(
-              "flex h-[30px] items-center gap-1.5 rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface-2)] px-2.5 text-[11px] text-[var(--text-faint)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)]",
-              loading && "opacity-50"
-            )}
-          >
-            <RefreshCw size={12} className={cn(loading && "animate-spin")} />
-            {syncedLabel ? `Synced ${syncedLabel}` : "Refresh"}
-          </button>
-        </div>
+    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="text-[20px] font-semibold leading-tight tracking-[-0.01em] text-[var(--text)]">Dashboard</h1>
+        <p className="mt-1 text-[13px] text-[var(--text-muted)]">
+          {scope === "my"
+            ? "Your work, blockers, and what to focus on next."
+            : "Team workload, delivery health, and recent activity."}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <ScopeToggle scope={scope} onChange={onScopeChange} />
+        <DateRangeToggle range={range} onChange={onRangeChange} />
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={loading}
+          aria-label="Refresh dashboard"
+          className={cn(
+            "inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]",
+            loading && "opacity-50"
+          )}
+        >
+          <RefreshCw size={11} className={cn(loading && "animate-spin")} />
+          {syncedLabel ? `Synced ${syncedLabel}` : "Refresh"}
+        </button>
       </div>
     </div>
   )

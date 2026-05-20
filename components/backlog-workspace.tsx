@@ -27,7 +27,7 @@ export function BacklogWorkspace({
   const [tickets, setTickets] = useState(initialTickets)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [modalStack, setModalStack] = useState<string[]>([])
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [globalFilter, setGlobalFilter] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -176,7 +176,7 @@ export function BacklogWorkspace({
     <div
       className={cn(
         "min-h-screen text-[var(--text)] transition-[padding-left] duration-200 ease-out",
-        sidebarExpanded ? "md:pl-[232px]" : "md:pl-[76px]"
+        sidebarExpanded ? "md:pl-[224px]" : "md:pl-[64px]"
       )}
     >
       <Sidebar
@@ -187,18 +187,18 @@ export function BacklogWorkspace({
 
       <div className="min-h-screen">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
-          <div className="mx-auto flex h-[48px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2">
-              <Archive size={15} className="text-[var(--text-faint)]" />
-              <span className="text-[13px] font-semibold text-[var(--text)]">Backlog</span>
-              <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-faint)]">
+          <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2.5">
+              <Archive size={14} className="text-[var(--text-faint)]" />
+              <h1 className="text-[14px] font-semibold tracking-[-0.01em] text-[var(--text)]">Backlog</h1>
+              <span className="rounded-[4px] bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--text-muted)]">
                 {tickets.length}
               </span>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
               <div className="relative hidden sm:flex items-center">
-                <Search size={13} className="pointer-events-none absolute left-3 text-[var(--text-faint)]" />
+                <Search size={13} className="pointer-events-none absolute left-2.5 text-[var(--text-faint)]" />
                 <input
                   ref={searchRef}
                   type="text"
@@ -207,23 +207,23 @@ export function BacklogWorkspace({
                   onKeyDown={(e) => e.key === "Escape" && (setGlobalFilter(""), e.currentTarget.blur())}
                   placeholder="Search backlog…"
                   aria-label="Search backlog"
-                  className="h-[28px] w-[180px] rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-8 pr-3 text-[12px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:w-[240px] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-[width] duration-150"
+                  className="h-7 w-[200px] rounded-[6px] border border-[var(--border)] bg-[var(--surface)] pl-7 pr-3 text-[12.5px] text-[var(--text)] placeholder:text-[var(--text-faint)] transition-colors focus:w-[260px] focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--border-strong))] focus:outline-none"
                 />
                 {globalFilter ? (
                   <button
                     type="button"
                     onClick={() => setGlobalFilter("")}
                     aria-label="Clear search"
-                    className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:text-[var(--text)]"
+                    className="absolute right-1.5 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:text-[var(--text)]"
                   >
-                    <X size={12} />
+                    <X size={11} />
                   </button>
                 ) : null}
               </div>
               <NotificationBell userId={currentUser.id} />
               <Button
                 variant="primary"
-                className="h-[28px] rounded-lg px-3 text-[12px]"
+                size="sm"
                 onClick={() => window.location.assign("/tickets?compose=1")}
               >
                 <Plus size={13} />
@@ -235,10 +235,10 @@ export function BacklogWorkspace({
 
         <main className="flex flex-col">
           {tickets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
-              <Archive size={32} className="text-[var(--text-faint)]" />
-              <p className="text-[14px] font-medium text-[var(--text-muted)]">No backlog items</p>
-              <p className="text-[12px] text-[var(--text-faint)]">
+            <div className="mx-3 my-6 flex flex-col items-center justify-center gap-2 rounded-[8px] border border-dashed border-[var(--border-strong)] bg-[var(--surface)] py-20 text-center sm:mx-6 lg:mx-8">
+              <Archive size={22} className="text-[var(--text-faint)]" />
+              <p className="text-[14px] font-semibold text-[var(--text)]">No backlog items</p>
+              <p className="max-w-[320px] text-[12.5px] text-[var(--text-muted)]">
                 Tickets with status &ldquo;Backlog&rdquo; will appear here.
               </p>
             </div>
@@ -262,6 +262,7 @@ export function BacklogWorkspace({
           key={modalTicket.id}
           ticket={modalTicket}
           parentTicket={modalParent}
+          tickets={tickets}
           users={users}
           currentUser={currentUser}
           onAssigneeChange={(user) => updateTicket(modalTicket.id, { assignee: user })}
@@ -270,10 +271,11 @@ export function BacklogWorkspace({
           onStatusChange={(status) => applyStatusChange(modalTicket.id, status)}
           onTitleChange={(title) => updateTitle(modalTicket.id, title)}
           onUpdate={(patch) => updateTicket(modalTicket.id, patch)}
-          onSubtaskCreate={(_input) => Promise.resolve(undefined)}
-          onSubtaskUpdate={(subtaskId, patch) => updateTicket(subtaskId, patch)}
-          onSubtaskDelete={() => {}}
-          onSubtaskOpen={openTicket}
+          onChildCreate={(_input) => Promise.resolve(undefined)}
+          onChildUpdate={(childId, patch) => updateTicket(childId, patch)}
+          onChildDelete={() => {}}
+          onChildOpen={openTicket}
+          onParentChange={() => {}}
         />
       ) : null}
     </div>

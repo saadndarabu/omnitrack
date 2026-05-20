@@ -25,20 +25,20 @@ export function ModalFrame({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel ?? (typeof title === "string" ? title : "Dialog")}
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--bg)_84%,transparent)] px-3 py-3 sm:px-4 sm:py-6"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-[rgba(15,15,15,0.32)] px-3 py-3 sm:px-4 sm:py-8"
     >
       <div
         className={cn(
-          "flex max-h-[calc(100vh-1.5rem)] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_8px_32px_-8px_rgba(16,24,40,0.12)] sm:max-h-[calc(100vh-3rem)]",
+          "flex max-h-[calc(100vh-1.5rem)] w-full max-w-[720px] flex-col overflow-hidden rounded-[10px] border border-[var(--border-strong)] bg-[var(--surface)] shadow-[var(--shadow-lg)] sm:max-h-[calc(100vh-4rem)]",
           className
         )}
       >
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-[var(--border)] px-4">
+        <div className="flex h-11 shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-3.5">
           <div className="min-w-0 flex-1">{title}</div>
           <div className="flex shrink-0 items-center gap-1">
             {headerActions}
-            <IconButton label="Close" onClick={onClose}>
-              <X size={20} />
+            <IconButton label="Close" onClick={onClose} size="sm">
+              <X size={15} />
             </IconButton>
           </div>
         </div>

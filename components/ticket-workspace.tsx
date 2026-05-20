@@ -109,7 +109,7 @@ export function TicketWorkspace({
   const [editingTitleTicketId, setEditingTitleTicketId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<TicketViewMode>("table")
   const [savedViewId, setSavedViewId] = useState<SavedViewId>(view === "my" ? "my" : "all")
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(true)
   const [globalFilter, setGlobalFilter] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -204,31 +204,34 @@ export function TicketWorkspace({
     )
   }
 
-  function addSubtaskToParent(parentId: string, subtask: Ticket) {
+  function addChildToParent(parentId: string, child: Ticket) {
     setTickets((currentTickets) =>
       currentTickets.map((ticket) =>
         ticket.id === parentId
-          ? { ...ticket, subtasks: [...ticket.subtasks, subtask] }
+          ? { ...ticket, workType: "epic", subtasks: [...ticket.subtasks, child] }
           : ticket
       )
     )
   }
 
-  function removeSubtaskFromParent(parentId: string, subtaskId: string) {
+  function removeChildFromParent(parentId: string, childId: string) {
     setTickets((currentTickets) =>
-      currentTickets.map((ticket) =>
-        ticket.id === parentId
-          ? { ...ticket, subtasks: ticket.subtasks.filter((s) => s.id !== subtaskId) }
-          : ticket
-      )
+      currentTickets.map((ticket) => {
+        if (ticket.id !== parentId) return ticket
+        const remaining = ticket.subtasks.filter((s) => s.id !== childId)
+        return {
+          ...ticket,
+          subtasks: remaining,
+          workType: remaining.length === 0 ? "task" : ticket.workType
+        }
+      })
     )
   }
 
-  async function createSubtask(
+  async function createChild(
     parentId: string,
     input: Parameters<typeof createTicket>[0]
   ) {
-    const now = new Date().toISOString()
     const parentTicket = tickets.find((t) => t.id === parentId)
     if (!parentTicket) return
 
@@ -255,25 +258,62 @@ export function TicketWorkspace({
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      console.error("createSubtask failed", err)
+      console.error("createChild failed", err)
       return
     }
 
-    const subtask: Ticket = await res.json()
-    addSubtaskToParent(parentId, subtask)
+    const child: Ticket = await res.json()
+    addChildToParent(parentId, child)
 
-    await fetch(`/api/tickets/${subtask.id}/history`, {
+    await fetch(`/api/tickets/${child.id}/history`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         actorId:  currentUser.id,
         field:    "created",
         oldValue: null,
-        newValue: subtask.title
+        newValue: child.title
       })
     }).catch(() => {})
 
-    return subtask
+    return child
+  }
+
+  async function changeParent(ticketId: string, newParentId: string | null) {
+    const ticket = tickets.find((t) => t.id === ticketId)
+    if (!ticket) return
+
+    const oldParentId = ticket.parentId
+
+    // Optimistically update local state
+    if (oldParentId) {
+      removeChildFromParent(oldParentId, ticketId)
+    }
+
+    if (newParentId) {
+      // Move ticket to be a top-level entry briefly, then add as child
+      setTickets((current) =>
+        current
+          .filter((t) => t.id !== ticketId)
+          .map((t) =>
+            t.id === newParentId
+              ? { ...t, workType: "epic", subtasks: [...t.subtasks, { ...ticket, parentId: newParentId }] }
+              : t
+          )
+      )
+    } else {
+      // Remove from children, add back as top-level ticket
+      setTickets((current) => [
+        { ...ticket, parentId: null },
+        ...current.filter((t) => t.id !== ticketId)
+      ])
+    }
+
+    await fetch(`/api/tickets/${ticketId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ parentId: newParentId })
+    }).catch(() => {})
   }
 
   function recordHistory(ticketId: string, field: string, oldValue: string | null, newValue: string | null) {
@@ -744,7 +784,7 @@ export function TicketWorkspace({
     <div
       className={cn(
         "min-h-screen text-[var(--text)] transition-[padding-left] duration-200 ease-out",
-        sidebarExpanded ? "md:pl-[232px]" : "md:pl-[76px]"
+        sidebarExpanded ? "md:pl-[224px]" : "md:pl-[64px]"
       )}
     >
       <Sidebar
@@ -754,33 +794,39 @@ export function TicketWorkspace({
       />
       <div className="min-h-screen">
         <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--bg)_92%,transparent)] backdrop-blur">
-          <div className="mx-auto flex h-[48px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
+          <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
             {/* Saved view tabs */}
-            <div className="flex items-center gap-0.5">
-              {SAVED_VIEWS.map((sv) => {
-                const active = sv.id === savedViewId
-                return (
-                  <button
-                    key={sv.id}
-                    type="button"
-                    onClick={() => setSavedViewId(sv.id)}
-                    className={cn(
-                      "inline-flex items-center rounded-md px-2.5 py-1 text-[13px] font-medium transition-colors whitespace-nowrap",
-                      active
-                        ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                        : "text-[var(--text-faint)] hover:bg-[var(--surface-2)] hover:text-[var(--text-muted)]"
-                    )}
-                  >
-                    {sv.label}
-                  </button>
-                )
-              })}
+            <div className="flex items-center gap-3">
+              <h1 className="text-[14px] font-semibold tracking-[-0.01em] text-[var(--text)]">
+                {view === "my" ? "My tickets" : "Tickets"}
+              </h1>
+              <span aria-hidden className="h-4 w-px bg-[var(--border)]" />
+              <div className="flex items-center gap-0.5">
+                {SAVED_VIEWS.map((sv) => {
+                  const active = sv.id === savedViewId
+                  return (
+                    <button
+                      key={sv.id}
+                      type="button"
+                      onClick={() => setSavedViewId(sv.id)}
+                      className={cn(
+                        "inline-flex h-7 items-center rounded-[6px] px-2.5 text-[12.5px] font-medium transition-colors whitespace-nowrap",
+                        active
+                          ? "bg-[var(--surface-2)] text-[var(--text)]"
+                          : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
+                      )}
+                    >
+                      {sv.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
               <div className="relative hidden sm:flex items-center">
                 <Search
                   size={13}
-                  className="pointer-events-none absolute left-3 text-[var(--text-faint)]"
+                  className="pointer-events-none absolute left-2.5 text-[var(--text-faint)]"
                 />
                 <input
                   ref={searchRef}
@@ -790,24 +836,24 @@ export function TicketWorkspace({
                   onKeyDown={(e) => e.key === "Escape" && (setGlobalFilter(""), e.currentTarget.blur())}
                   placeholder="Search…"
                   aria-label="Search tickets"
-                  className="h-[28px] w-[180px] rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-8 pr-3 text-[12px] text-[var(--text)] placeholder:text-[var(--text-faint)] focus:w-[240px] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] transition-[width] duration-150"
+                  className="h-7 w-[200px] rounded-[6px] border border-[var(--border)] bg-[var(--surface)] pl-7 pr-3 text-[12.5px] text-[var(--text)] placeholder:text-[var(--text-faint)] transition-colors focus:w-[260px] focus:border-[color-mix(in_srgb,var(--accent)_55%,var(--border-strong))] focus:outline-none"
                 />
                 {globalFilter ? (
                   <button
                     type="button"
                     onClick={() => setGlobalFilter("")}
                     aria-label="Clear search"
-                    className="absolute right-2 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:text-[var(--text)]"
+                    className="absolute right-1.5 inline-flex h-5 w-5 items-center justify-center rounded text-[var(--text-faint)] transition-colors hover:text-[var(--text)]"
                   >
-                    <X size={12} />
+                    <X size={11} />
                   </button>
                 ) : null}
               </div>
-              <IconButton label="Keyboard shortcuts" onClick={() => setHelpOpen(true)}>
-                <HelpCircle size={17} />
+              <IconButton label="Keyboard shortcuts" onClick={() => setHelpOpen(true)} size="sm">
+                <HelpCircle size={15} />
               </IconButton>
               <NotificationBell userId={currentUser.id} />
-              <Button variant="primary" className="h-[28px] rounded-lg px-3 text-[12px]" onClick={() => setComposerOpen(true)}>
+              <Button variant="primary" size="sm" onClick={() => setComposerOpen(true)}>
                 <Plus size={13} />
                 <span className="hidden sm:inline">New ticket</span>
               </Button>
@@ -856,6 +902,7 @@ export function TicketWorkspace({
           key={modalTicket.id}
           ticket={modalTicket}
           parentTicket={modalParent}
+          tickets={tickets}
           users={users}
           currentUser={currentUser}
           onAssigneeChange={(user) => updateTicket(modalTicket.id, { assignee: user })}
@@ -864,13 +911,14 @@ export function TicketWorkspace({
           onStatusChange={(status) => requestStatusChange(modalTicket.id, status)}
           onTitleChange={(title) => updateTitle(modalTicket.id, title)}
           onUpdate={(patch) => updateTicket(modalTicket.id, patch)}
-          onSubtaskCreate={(input) => createSubtask(modalTicket.id, input)}
-          onSubtaskUpdate={(subtaskId, patch) => updateTicket(subtaskId, patch)}
-          onSubtaskDelete={(subtaskId) => {
-            fetch(`/api/tickets/${subtaskId}`, { method: "DELETE" }).catch(() => {})
-            if (modalTicket.id) removeSubtaskFromParent(modalTicket.id, subtaskId)
+          onChildCreate={(input) => createChild(modalTicket.id, input)}
+          onChildUpdate={(childId, patch) => updateTicket(childId, patch)}
+          onChildDelete={(childId) => {
+            fetch(`/api/tickets/${childId}`, { method: "DELETE" }).catch(() => {})
+            if (modalTicket.id) removeChildFromParent(modalTicket.id, childId)
           }}
-          onSubtaskOpen={openTicket}
+          onChildOpen={openTicket}
+          onParentChange={(newParentId) => changeParent(modalTicket.id, newParentId)}
         />
       ) : null}
 
@@ -1191,7 +1239,7 @@ function NewTicketModal({
             <section className="min-w-0 space-y-5 border-b-[0.5px] border-[var(--border)] p-4 lg:border-b-0 lg:border-r-[0.5px]">
               <div className="space-y-1.5">
                 <span className="block text-[11px] font-medium text-[var(--text-faint)]">Description</span>
-                <div className="rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)] px-3 py-2.5">
+                <div className="rounded-[8px] border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)] px-3 py-2.5">
                   <textarea
                     value={draft.description}
                     onChange={(e) => patch({ description: e.target.value })}
@@ -1204,7 +1252,7 @@ function NewTicketModal({
 
               <div className="space-y-1.5">
                 <span className="block text-[11px] font-medium text-[var(--text-faint)]">Acceptance criteria</span>
-                <div className="overflow-hidden rounded-xl border-[0.5px] border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)]">
+                <div className="overflow-hidden rounded-[8px] border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_40%,transparent)]">
                   {draft.acceptanceCriteria.length > 0 && (
                     <div className="divide-y divide-[var(--border)]">
                       {draft.acceptanceCriteria.map((criterion, index) => (
@@ -1260,7 +1308,7 @@ function NewTicketModal({
 
             {/* Properties sidebar */}
             <aside className="p-4">
-              <div className="divide-y divide-[var(--border)] overflow-hidden rounded-xl border-[0.5px] border-[var(--border)]">
+              <div className="divide-y divide-[var(--border)] overflow-hidden rounded-[8px] border border-[var(--border)]">
                 <ComposerPropRow label="Status">
                   <ComposerSelect value={draft.status} onChange={(v) => patch({ status: v as Status })}>
                     {STATUSES.map((s) => (

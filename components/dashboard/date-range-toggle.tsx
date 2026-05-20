@@ -5,8 +5,8 @@ import type { DashboardRange } from "@/lib/dashboard/dashboard-types"
 
 const LABELS: Record<DashboardRange, string> = {
   this_week: "This week",
-  "7d":      "Last 7 days",
-  "30d":     "Last 30 days",
+  "7d":      "7d",
+  "30d":     "30d",
 }
 
 export function DateRangeToggle({
@@ -17,17 +17,17 @@ export function DateRangeToggle({
   onChange: (r: DashboardRange) => void
 }) {
   return (
-    <div className="flex rounded-lg border-[0.5px] border-[var(--border)] bg-[var(--surface-2)] p-0.5">
+    <div className="inline-flex h-7 items-center rounded-[6px] border border-[var(--border)] bg-[var(--surface)] p-[2px]">
       {(Object.keys(LABELS) as DashboardRange[]).map((r) => (
         <button
           key={r}
           type="button"
           onClick={() => onChange(r)}
           className={cn(
-            "rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors duration-150",
+            "h-[22px] rounded-[4px] px-2 text-[12px] font-medium transition-colors duration-150",
             range === r
-              ? "bg-[var(--surface-3)] text-[var(--text)]"
-              : "text-[var(--text-faint)] hover:text-[var(--text-muted)]"
+              ? "bg-[var(--surface-2)] text-[var(--text)]"
+              : "text-[var(--text-muted)] hover:text-[var(--text)]"
           )}
         >
           {LABELS[r]}

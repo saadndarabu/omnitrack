@@ -63,13 +63,13 @@ export function NotificationBell({ userId }: { userId: string }) {
       type="button"
       aria-label="Notifications"
       className={cn(
-        "relative inline-flex h-8 w-8 items-center justify-center rounded-md transition-[background-color,color] duration-[120ms] ease-out hover:bg-[var(--surface-2)] focus-visible:outline-none",
+        "relative inline-flex h-7 w-7 items-center justify-center rounded-[6px] transition-colors duration-150 hover:bg-[var(--surface-2)] focus-visible:outline-none",
         unreadCount > 0 ? "text-[var(--text)]" : "text-[var(--text-muted)] hover:text-[var(--text)]"
       )}
     >
-      <Bell size={18} />
+      <Bell size={15} />
       {unreadCount > 0 && (
-        <span className="absolute right-1 top-1 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--accent)] px-[3px] text-[9px] font-bold leading-none text-white">
+        <span className="absolute right-0.5 top-0.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-[var(--text)] px-[3px] text-[9px] font-semibold leading-none text-[var(--bg)] ring-2 ring-[var(--bg)]">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}
@@ -80,13 +80,13 @@ export function NotificationBell({ userId }: { userId: string }) {
     <Popover trigger={trigger} align="end" panelClassName="w-[340px]">
       {(close) => (
         <div className="flex flex-col">
-          <div className="flex items-center justify-between border-b-[0.5px] border-[var(--border)] px-4 py-3">
-            <span className="text-[13px] font-semibold text-[var(--text)]">Notifications</span>
+          <div className="flex items-center justify-between border-b border-[var(--border)] px-3.5 py-2.5">
+            <span className="text-[12.5px] font-semibold text-[var(--text)]">Notifications</span>
             {unreadCount > 0 && (
               <button
                 type="button"
                 onClick={() => markAllRead(close)}
-                className="text-[12px] text-[var(--accent)] hover:brightness-110 transition-[filter] duration-[120ms]"
+                className="text-[12px] font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors duration-150"
               >
                 Mark all read
               </button>
@@ -105,13 +105,13 @@ export function NotificationBell({ userId }: { userId: string }) {
                     type="button"
                     onClick={() => markRead(n.id)}
                     className={cn(
-                      "flex w-full items-start gap-3 px-4 py-3 text-left transition-colors duration-[120ms] hover:bg-[var(--surface-2)]",
-                      !n.read && "bg-[color-mix(in_srgb,var(--accent)_6%,transparent)]"
+                      "flex w-full items-start gap-3 px-3.5 py-2.5 text-left transition-colors duration-150 hover:bg-[var(--surface-2)]",
+                      !n.read && "bg-[var(--surface-2)]"
                     )}
                   >
                     <div className={cn(
-                      "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                      n.read ? "bg-transparent" : "bg-[var(--accent)]"
+                      "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                      n.read ? "bg-transparent" : "bg-[var(--text)]"
                     )} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">

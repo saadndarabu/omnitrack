@@ -92,7 +92,7 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
     <div className="mx-auto max-w-2xl px-6 py-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--text)]">
+        <h1 className="text-[20px] font-semibold tracking-[-0.01em] text-[var(--text)]">
           Profile
         </h1>
         <p className="mt-1 text-[13px] text-[var(--text-muted)]">
@@ -100,17 +100,17 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
         </p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-7">
         {/* Avatar */}
         <section>
-          <label className="mb-2 block text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-faint)]">
+          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-faint)]">
             Profile picture
           </label>
           <div className="flex items-center gap-5">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="group relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] transition-opacity hover:opacity-90 focus-visible:outline-none"
+              className="group relative h-[64px] w-[64px] shrink-0 overflow-hidden rounded-[8px] border border-[var(--border)] bg-[var(--surface-2)] transition-opacity hover:opacity-90 focus-visible:outline-none"
               aria-label="Change profile picture"
             >
               {avatarPreview ? (
@@ -122,12 +122,12 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
                   unoptimized
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[22px] font-semibold text-[var(--text-muted)]">
+                <span className="flex h-full w-full items-center justify-center text-[18px] font-semibold text-[var(--text-muted)]">
                   {initials}
                 </span>
               )}
-              <span className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                <Camera size={18} className="text-white" />
+              <span className="absolute inset-0 flex items-center justify-center rounded-[8px] bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                <Camera size={16} className="text-white" />
               </span>
             </button>
             <div>
@@ -152,7 +152,7 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
         <section>
           <label
             htmlFor="profile-name"
-            className="mb-2 block text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-faint)]"
+            className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-faint)]"
           >
             Display name
           </label>
@@ -167,7 +167,7 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
 
         {/* Areas of responsibility */}
         <section>
-          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-faint)]">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-faint)]">
             Areas of responsibility
           </p>
           <div className="flex flex-wrap gap-2">
@@ -179,10 +179,10 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
                   type="button"
                   onClick={() => toggleArea(area)}
                   className={cn(
-                    "h-8 rounded-xl border px-3 text-[12px] font-medium transition-colors duration-[120ms]",
+                    "h-7 rounded-[6px] border px-2.5 text-[12px] font-medium transition-colors duration-[120ms]",
                     active
-                      ? "border-[#111827] bg-[#111827] text-white"
-                      : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+                      ? "border-[var(--text)] bg-[var(--text)] text-[var(--bg)]"
+                      : "border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
                   )}
                 >
                   {USER_AREA_LABELS[area]}
@@ -199,10 +199,10 @@ export function ProfileShell({ user: initialUser }: { user: User }) {
 
         {/* Role (read-only) */}
         <section>
-          <p className="mb-2 text-[12px] font-medium uppercase tracking-[0.06em] text-[var(--text-faint)]">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-[var(--text-faint)]">
             Role
           </p>
-          <span className="inline-flex h-8 items-center rounded-xl border border-[var(--border)] bg-[var(--surface-2)] px-3 text-[12px] font-medium capitalize text-[var(--text-muted)]">
+          <span className="inline-flex h-7 items-center rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)] px-2.5 text-[12px] font-medium capitalize text-[var(--text-muted)]">
             {user.role}
           </span>
           <p className="mt-1.5 text-[11px] text-[var(--text-faint)]">

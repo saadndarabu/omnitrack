@@ -12,7 +12,7 @@ export function OwnerWorkloadChart({
 }) {
   if (!data.length) {
     return (
-      <div className={cn("flex items-center justify-center rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] p-5", className)}>
+      <div className={cn("flex items-center justify-center rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4", className)}>
         <p className="text-[13px] text-[var(--text-faint)]">No assigned work to show.</p>
       </div>
     )
@@ -20,8 +20,8 @@ export function OwnerWorkloadChart({
   const max = Math.max(...data.map((d) => d.active), 1)
 
   return (
-    <div className={cn("rounded border-[0.5px] border-[var(--border)] bg-[var(--surface)] p-5", className)}>
-      <h3 className="mb-4 text-[13px] font-semibold text-[var(--text)]">Owner Workload</h3>
+    <div className={cn("rounded-[8px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4", className)}>
+      <h3 className="mb-4 text-[12px] font-semibold tracking-[0.02em] text-[var(--text-muted)] uppercase">Owner Workload</h3>
       <div className="space-y-3">
         {data.map((d) => (
           <div key={d.ownerId} className="flex items-center gap-3">

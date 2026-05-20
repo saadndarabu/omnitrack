@@ -63,7 +63,7 @@ function ChannelSelect({
         disabled={disabled}
         onClick={() => setOpen(o => !o)}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[13px] text-[var(--text)] transition hover:border-[var(--border-strong)]",
+          "flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[var(--border)] bg-[var(--surface)] px-2.5 text-[13px] text-[var(--text)] transition hover:border-[var(--border-strong)]",
           "disabled:opacity-50 disabled:cursor-not-allowed"
         )}
       >
@@ -74,7 +74,7 @@ function ChannelSelect({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)] py-1 shadow-lg">
+        <div className="absolute z-50 mt-1 w-full rounded-[6px] border border-[var(--border-strong)] bg-[var(--surface)] py-1 shadow-[var(--shadow-md)]">
           <div className="max-h-52 overflow-y-auto">
             {channels.length === 0 ? (
               <p className="px-3 py-2 text-[12px] text-[var(--text-faint)]">No channels found</p>
@@ -222,14 +222,14 @@ function SlackCard() {
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-[var(--surface-2)] transition-colors",
+        "rounded-[8px] border bg-[var(--surface)] transition-colors",
         connected ? "border-[var(--border-strong)]" : "border-[var(--border)]"
       )}
     >
       {/* Main row */}
       <div className="flex items-start gap-4 p-5">
         {/* Icon */}
-        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)]">
           <SlackIcon size={20} />
         </span>
 
@@ -238,7 +238,7 @@ function SlackCard() {
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-semibold text-[var(--text)]">Slack</span>
             {connected && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--status-done)_14%,transparent)] px-2 py-0.5 text-[11px] font-medium text-[var(--status-done)]">
+              <span className="inline-flex items-center gap-1 rounded-[4px] border border-[color-mix(in_srgb,var(--status-done)_30%,var(--border))] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--status-done)]">
                 <CheckCircle2 size={10} />
                 Connected
               </span>
@@ -297,7 +297,7 @@ function SlackCard() {
       {/* Channel config panel */}
       {configOpen && connected && (
         <div className="border-t border-[var(--border)] px-5 pb-5 pt-4">
-          <p className="mb-3 text-[12px] font-medium text-[var(--text-muted)] uppercase tracking-wide">
+          <p className="mb-3 text-[11px] font-semibold tracking-[0.04em] text-[var(--text-faint)] uppercase">
             Channel Settings
           </p>
 
@@ -344,7 +344,7 @@ function SlackCard() {
 
       {/* Toast */}
       {toast && (
-        <div className="mx-5 mb-4 rounded-xl bg-[var(--surface-3)] px-3 py-2 text-[12px] text-[var(--text)]">
+        <div className="mx-5 mb-4 rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[12px] text-[var(--text)]">
           {toast}
         </div>
       )}
@@ -410,7 +410,7 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--text)]">
+        <h1 className="text-[20px] font-semibold tracking-[-0.01em] text-[var(--text)]">
           Connectors
         </h1>
         <p className="mt-1 text-[13px] text-[var(--text-muted)]">
@@ -422,12 +422,12 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
         {/* GitHub card — personal, all users */}
         <div
           className={cn(
-            "rounded-2xl border bg-[var(--surface-2)] p-5 transition-colors",
+            "rounded-[8px] border bg-[var(--surface)] p-5 transition-colors",
             githubConnected ? "border-[var(--border-strong)]" : "border-[var(--border)]"
           )}
         >
           <div className="flex items-start gap-4">
-            <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)]">
               <GitHubIcon size={20} className="text-[var(--text)]" />
             </span>
 
@@ -435,7 +435,7 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
               <div className="flex items-center gap-2">
                 <span className="text-[14px] font-semibold text-[var(--text)]">GitHub</span>
                 {githubConnected && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[color-mix(in_srgb,var(--status-done)_14%,transparent)] px-2 py-0.5 text-[11px] font-medium text-[var(--status-done)]">
+                  <span className="inline-flex items-center gap-1 rounded-[4px] border border-[color-mix(in_srgb,var(--status-done)_30%,var(--border))] px-1.5 py-0.5 text-[10.5px] font-medium text-[var(--status-done)]">
                     <CheckCircle2 size={10} />
                     Connected
                   </span>
@@ -468,10 +468,9 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
             <div className="shrink-0">
               {githubConnected ? (
                 <Button
-                  variant="quiet"
+                  variant="danger"
                   onClick={handleGitHubDisconnect}
                   disabled={loading}
-                  className="text-[var(--status-blocked)] hover:text-[var(--status-blocked)]"
                 >
                   {loading
                     ? <Loader2 size={14} className="animate-spin" />
@@ -498,9 +497,9 @@ export function ConnectorsShell({ user: initialUser }: { user: User }) {
         {userIsAdmin ? (
           <SlackCard />
         ) : (
-          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-5">
+          <div className="rounded-[8px] border border-[var(--border)] bg-[var(--surface)] p-5">
             <div className="flex items-start gap-4">
-              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+              <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[6px] border border-[var(--border)] bg-[var(--surface-2)]">
                 <SlackIcon size={20} />
               </span>
               <div className="min-w-0 flex-1">

@@ -79,16 +79,16 @@ export function CommandMenu({
       role="dialog"
       aria-modal="true"
       aria-label="Command menu"
-      className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--bg)_84%,transparent)] px-4 pt-24"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-[rgba(15,15,15,0.32)] px-4 pt-24"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onOpenChange(false)
         }
       }}
     >
-      <div className="w-full max-w-[640px] overflow-hidden rounded-xl border-[0.5px] border-[var(--border)] bg-[var(--surface)]">
-        <div className="flex h-12 items-center gap-3 border-b-[0.5px] border-[var(--border)] px-4">
-          <Search size={20} className="text-[var(--text-muted)]" />
+      <div className="w-full max-w-[640px] overflow-hidden rounded-[10px] border border-[var(--border-strong)] bg-[var(--surface)] shadow-[var(--shadow-lg)]">
+        <div className="flex h-11 items-center gap-2.5 border-b border-[var(--border)] px-3.5">
+          <Search size={16} className="text-[var(--text-faint)]" />
           <input
             ref={inputRef}
             value={query}
@@ -133,9 +133,9 @@ export function CommandMenu({
                   onMouseEnter={() => setSelectedIndex(index)}
                   onClick={() => openTicket(ticket.id)}
                   className={cn(
-                    "flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left transition-colors duration-[120ms] ease-out",
+                    "flex h-10 w-full items-center gap-3 rounded-[6px] px-2.5 text-left transition-colors duration-150",
                     selected
-                      ? "bg-[color-mix(in_srgb,var(--accent)_22%,var(--surface))]"
+                      ? "bg-[var(--surface-2)]"
                       : "hover:bg-[var(--surface-2)]"
                   )}
                 >
@@ -143,7 +143,7 @@ export function CommandMenu({
                   <span className="w-[60px] shrink-0 font-mono text-[11px] text-[var(--text-faint)]">
                     {ticket.id}
                   </span>
-                  <span className="flex-1 truncate text-[14px] text-[var(--text)]">
+                  <span className="flex-1 truncate text-[13px] text-[var(--text)]">
                     {ticket.title}
                   </span>
                   <span className="hidden text-[11px] text-[var(--text-muted)] sm:inline">

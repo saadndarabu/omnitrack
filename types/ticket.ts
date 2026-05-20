@@ -2,7 +2,7 @@ import type { Status } from "@/lib/status"
 import type { User } from "@/types/user"
 
 export type Project = "sara" | "omniscan" | "platform"
-export type WorkType = "feature" | "enhancement" | "bug" | "task"
+export type WorkType = "feature" | "enhancement" | "bug" | "task" | "epic"
 export type Priority = "critical" | "high" | "medium" | "low"
 export type Area = "platform" | "product" | "integrations"
 export type Component = "tickets" | "github" | "routing" | "filters" | "state"

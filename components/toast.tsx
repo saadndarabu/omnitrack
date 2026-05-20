@@ -52,19 +52,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             key={t.id}
             role="status"
             className={cn(
-              "pointer-events-auto flex min-w-[260px] max-w-[360px] items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm transition-all duration-200",
-              t.variant === "success"
-                ? "border-[color-mix(in_srgb,var(--status-done)_28%,transparent)] bg-[color-mix(in_srgb,var(--status-done)_10%,var(--surface))] text-[var(--text)]"
-                : "border-[color-mix(in_srgb,var(--status-blocked)_28%,transparent)] bg-[color-mix(in_srgb,var(--status-blocked)_10%,var(--surface))] text-[var(--text)]"
+              "pointer-events-auto flex min-w-[260px] max-w-[360px] items-start gap-2.5 rounded-[8px] border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-2.5 shadow-[var(--shadow-lg)] transition-all duration-200"
             )}
           >
             <span className={cn(
-              "mt-0.5 shrink-0",
+              "mt-[1px] shrink-0",
               t.variant === "success" ? "text-[var(--status-done)]" : "text-[var(--status-blocked)]"
             )}>
               {t.variant === "success" ? <Check size={14} strokeWidth={2.5} /> : <AlertTriangle size={14} strokeWidth={2.5} />}
             </span>
-            <span className="flex-1 text-[13px] leading-snug">{t.message}</span>
+            <span className="flex-1 text-[13px] leading-snug text-[var(--text)]">{t.message}</span>
             <button
               type="button"
               onClick={() => dismiss(t.id)}
