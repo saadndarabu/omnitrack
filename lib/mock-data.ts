@@ -43,7 +43,8 @@ export const tickets: Ticket[] = [
     assignee: users[1],
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-06T08:35:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-06T08:35:00.000Z",
     updatedAt: "2026-05-07T07:45:00.000Z",
     comments: [
       {
@@ -78,7 +79,8 @@ export const tickets: Ticket[] = [
     assignee: users[2],
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-05T11:05:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-05T11:05:00.000Z",
     updatedAt: "2026-05-07T06:18:00.000Z",
     comments: []
   },
@@ -106,7 +108,8 @@ export const tickets: Ticket[] = [
     assignee: users[0],
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-06T13:22:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-06T13:22:00.000Z",
     updatedAt: "2026-05-06T17:10:00.000Z",
     comments: []
   },
@@ -134,7 +137,8 @@ export const tickets: Ticket[] = [
     assignee: users[3],
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-04T09:44:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-04T09:44:00.000Z",
     updatedAt: "2026-05-06T14:32:00.000Z",
     comments: [
       {
@@ -169,7 +173,8 @@ export const tickets: Ticket[] = [
     assignee: null,
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-03T07:50:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-03T07:50:00.000Z",
     updatedAt: "2026-05-05T12:15:00.000Z",
     comments: []
   },
@@ -197,7 +202,8 @@ export const tickets: Ticket[] = [
     assignee: users[0],
     parentId: null,
     subtasks: [],
-    createdAt: "2026-05-01T16:10:00.000Z",
+    fbApproved: false,
+    createdAt:"2026-05-01T16:10:00.000Z",
     updatedAt: "2026-05-05T09:20:00.000Z",
     comments: []
   }

@@ -434,6 +434,7 @@ export function TicketWorkspace({
       assignee: input.assignee,
       parentId: null,
       subtasks: [],
+      fbApproved: false,
       createdAt: now,
       updatedAt: now,
       comments: []

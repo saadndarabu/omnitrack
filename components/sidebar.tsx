@@ -1,6 +1,7 @@
 "use client"
 
 import {
+  Archive,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -13,6 +14,7 @@ import { cn } from "@/lib/utils"
 const primaryItems = [
   { label: "Dashboard",  Icon: LayoutDashboard, href: "/dashboard" },
   { label: "All Tickets",Icon: ListTodo,        href: "/tickets" },
+  { label: "Backlog",    Icon: Archive,         href: "/backlog" },
 ]
 
 const bottomItems = [

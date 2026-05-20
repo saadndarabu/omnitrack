@@ -111,7 +111,7 @@ export function TicketDetail({
   onSubtaskOpen: (ticketId: string) => void
   onSubtaskUpdate: (subtaskId: string, patch: Partial<Ticket>) => void
   onTitleChange: (title: string) => void
-  onUpdate: (patch: Partial<Pick<Ticket, "acceptanceCriteria" | "blockerReason" | "description" | "dueDate" | "estimate" | "workType">>) => void
+  onUpdate: (patch: Partial<Pick<Ticket, "acceptanceCriteria" | "blockerReason" | "description" | "dueDate" | "estimate" | "fbApproved" | "workType">>) => void
   parentTicket?: Ticket | null
   ticket: Ticket
   users: User[]
@@ -598,6 +598,26 @@ export function TicketDetail({
                   </option>
                 ))}
               </SelectControl>
+            </PropRow>
+
+            <PropRow label="FB Approved">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={ticket.fbApproved}
+                onClick={() => onUpdate({ fbApproved: !ticket.fbApproved })}
+                className={cn(
+                  "relative inline-flex h-[18px] w-[32px] shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-1",
+                  ticket.fbApproved ? "bg-[var(--accent)]" : "bg-[var(--surface-3)]"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block h-[14px] w-[14px] rounded-full bg-white shadow-sm transition-transform duration-200",
+                    ticket.fbApproved ? "translate-x-[14px]" : "translate-x-0"
+                  )}
+                />
+              </button>
             </PropRow>
 
             <PropRow label="Git">

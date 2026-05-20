@@ -1,29 +1,29 @@
 export const dynamic = "force-dynamic"
 
 import { redirect } from "next/navigation"
-import { TicketWorkspace } from "@/components/ticket-workspace"
+import { BacklogWorkspace } from "@/components/backlog-workspace"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { dbGetTickets } from "@/lib/db/tickets"
 import { dbGetCurrentUser, dbGetUsers } from "@/lib/db/users"
 import { dbGetAttachmentCounts } from "@/lib/db/attachments"
 
-export default async function TicketsPage() {
-  const db      = await createSupabaseServerClient()
+export default async function BacklogPage() {
+  const db = await createSupabaseServerClient()
   const [allTickets, users, currentUser] = await Promise.all([
     dbGetTickets(db),
     dbGetUsers(db),
     dbGetCurrentUser(db)
   ])
-  const tickets = allTickets.filter((t) => t.status !== "backlog")
 
   if (!currentUser) {
     redirect("/login")
   }
 
+  const tickets = allTickets.filter((t) => t.status === "backlog")
   const attachmentCounts = await dbGetAttachmentCounts(db, tickets.map((t) => t.id)).catch(() => ({}))
 
   return (
-    <TicketWorkspace
+    <BacklogWorkspace
       initialTickets={tickets}
       currentUser={currentUser}
       users={users}

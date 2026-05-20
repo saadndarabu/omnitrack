@@ -74,6 +74,7 @@ export interface Database {
           pr_number:            number | null
           assignee_id:          string | null
           parent_id:            string | null
+          fb_approved:          boolean
           created_at:           string
           updated_at:           string
         }
@@ -96,6 +97,7 @@ export interface Database {
           pr_number?:           number | null
           assignee_id?:         string | null
           parent_id?:           string | null
+          fb_approved?:         boolean
           created_at?:          string
           updated_at?:          string
         }
@@ -117,6 +119,7 @@ export interface Database {
           pr_number?:           number | null
           assignee_id?:         string | null
           parent_id?:           string | null
+          fb_approved?:         boolean
           updated_at?:          string
         }
       }

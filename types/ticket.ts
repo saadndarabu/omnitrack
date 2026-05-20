@@ -34,6 +34,7 @@ export type Ticket = {
   assignee: User | null
   parentId: string | null
   subtasks: Ticket[]
+  fbApproved: boolean
   createdAt: string
   updatedAt: string
   comments: TicketComment[]

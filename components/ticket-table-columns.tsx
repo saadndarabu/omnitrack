@@ -1,7 +1,7 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Bug, CheckCircle2, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles, TriangleAlert } from "lucide-react"
+import { Bug, CheckCircle2, CheckSquare, ChevronDown, GitBranch, Paperclip, Rocket, Sparkles, Square, TriangleAlert } from "lucide-react"
 import { Avatar } from "@/components/avatar"
 import { Tag } from "@/components/tag"
 import { relTime } from "@/lib/rel-time"
@@ -468,6 +468,25 @@ export function createTicketColumns(
       meta: { width: "w-[88px]" }
     },
     {
+      id: "fbApproved",
+      accessorKey: "fbApproved",
+      header: "FB Approved",
+      enableSorting: true,
+      cell: ({ row }) =>
+        row.original.fbApproved ? (
+          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--accent)]">
+            <CheckSquare size={13} />
+            Yes
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-[12px] text-[var(--text-faint)]">
+            <Square size={13} />
+            No
+          </span>
+        ),
+      meta: { width: "w-[110px]" }
+    },
+    {
       id: "description",
       accessorKey: "description",
       header: "Description",
@@ -496,6 +515,7 @@ export const COLUMN_LABELS: Record<string, string> = {
   area: "Area",
   component: "Component",
   estimate: "Estimate",
+  fbApproved: "FB Approved",
   description: "Description"
 }
 
@@ -513,5 +533,6 @@ export const DEFAULT_VISIBLE_COLUMNS: Record<string, boolean> = {
   area: false,
   component: false,
   estimate: false,
+  fbApproved: false,
   description: false
 }

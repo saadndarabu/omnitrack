@@ -63,6 +63,7 @@ function baseRowToTicket(row: TicketBaseRow, subtasks: Ticket[] = []): Ticket {
     assignee:            row.assignee ? rowToUser(row.assignee) : null,
     parentId:            row.parent_id,
     subtasks,
+    fbApproved:          row.fb_approved ?? false,
     createdAt:           row.created_at,
     updatedAt:           row.updated_at,
     comments:            (row.ticket_comments ?? [])
@@ -254,6 +255,7 @@ export type UpdateTicketInput = Partial<{
   prNumber:            number | null
   assigneeId:          string | null
   parentId:            string | null
+  fbApproved:          boolean
 }>
 
 export async function dbUpdateTicket(
@@ -280,6 +282,7 @@ export async function dbUpdateTicket(
   if (input.prNumber            !== undefined) patch.pr_number           = input.prNumber
   if (input.assigneeId          !== undefined) patch.assignee_id         = input.assigneeId
   if (input.parentId            !== undefined) patch.parent_id           = input.parentId
+  if (input.fbApproved          !== undefined) patch.fb_approved         = input.fbApproved
 
   const { data, error } = await db
     .from("tickets")
